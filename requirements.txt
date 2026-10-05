@@ -1,0 +1,16 @@
+numpy>=1.26
+scipy>=1.11             # scipy.io.loadmat for the .mat files
+scikit-learn>=1.3   
+pandas>=2.0
+matplotlib>=3.7
+
+# NN approach dependencies
+torch>=2.2
+skorch>=0.15         # wraps torch nn.Module in the sklearn API
+
+# Classical approach dependencies
+xgboost>=2.0
+
+# Notebooks
+jupyterlab>=4.0
+tqdm>=4.66

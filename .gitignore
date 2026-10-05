@@ -1,0 +1,21 @@
+# Dataset: track the .mat files; skip the large unused .npy
+data/**/*.npy
+
+# Trained model weights (regenerate via src.train)
+outputs/models/*
+!outputs/models/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+Lessons/
