@@ -97,6 +97,11 @@ MODELS = {
                        LinearSVC(loss="hinge", dual=True, max_iter=1_000_000))),  # large C converges slowly
                    {"multioutputclassifier__estimator__C": [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0]}),
 
+    # the same linear SVM on the kernel methods' 10k windows: boundary comparison with svm_rbf on identical data
+    "svm_linear_10k": (lambda: Subsampled(make_pipeline(StandardScaler(), MultiOutputClassifier(
+                           LinearSVC(loss="hinge", dual=True, max_iter=1_000_000)))),
+                       {"estimator__multioutputclassifier__estimator__C": [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0]}),
+
     # same RBF kernel as krr, hinge loss; on the same 10k windows
     "svm_rbf": (lambda: Subsampled(make_pipeline(StandardScaler(), RBFSVMClassifier())),
                 {"estimator__rbfsvmclassifier__C": [0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0],
