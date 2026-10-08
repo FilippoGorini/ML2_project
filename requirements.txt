@@ -8,9 +8,6 @@ matplotlib>=3.7
 torch>=2.2
 skorch>=0.15         # wraps torch nn.Module in the sklearn API
 
-# Classical approach dependencies
-xgboost>=2.0
-
 # Notebooks
 jupyterlab>=4.0
 tqdm>=4.66
