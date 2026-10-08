@@ -52,6 +52,11 @@ def split(recs, stride=10, test_stride=1):
     return out
 
 
+def labels(recs, ends):
+    """(M, 4) contact labels at the given window ends, recordings stacked in order."""
+    return np.concatenate([recs[name][1][e] for name, e in ends.items()])
+
+
 def check_no_overlap(sp):
     """Assert that, in every recording, train/val/test windows share no timestep."""
     for name in sp["train"]:

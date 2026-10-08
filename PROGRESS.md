@@ -140,16 +140,75 @@ Gives every later number a zero point and catches models that collapse to "never
 
 ---
 
-## Phase 3 — Baseline and first model *(next)*
-Plan: majority baseline; ridge on the current timestep only (54 values, no history).
+## Phase 3 — Baseline and first model
 
-## Planned
-- Ridge on the raw window → does history help?
-- Hand-crafted features (incl. `|v|`, `v²`, window statistics) → does domain knowledge help?
-- Kernel ridge (RBF) and SVM on the best input → boundary vs loss (EMG-style 2×2).
-- Possibly a tree model (feature importance is easy to present).
-- Appendix: stride 1 vs 150 rerun; class weighting / threshold for precision; random-split comparison
-  to show the optimism we avoid.
+Code: `src/train.py` (fit + report), `src/evaluate.py` (metrics, saves `outputs/results/<model>.json`).
+Every model reports test scores on every timestep (headline) and on every 10th (check that the
+stride-10 validation is a faithful proxy).
+
+### Majority baseline (`python -m src.train majority`)
+`DummyClassifier(strategy="most_frequent")` on the 4 label columns = 4 independent "most frequent label"
+rules, one per leg. Every leg's most frequent label is "no contact" → always predicts all feet in the air.
+
+| | F1 | precision | recall | accuracy | exact-state |
+|---|---|---|---|---|---|
+| majority (test, every timestep) | 0.000 | 0.000 | 0.000 | 0.665 | 0.368 |
+
+- Accuracy 0.665 without looking at the input → accuracy alone is a misleading metric here.
+- Exact-state 0.368 = share of test timesteps with all feet in the air (air recordings + trot flight phases).
+- Every 10th timestep: exact-state 0.3685 vs 0.3679 → the subsample agrees.
+
+### Next
+Ridge on the current timestep only (54 values, no history).
+
+## Plan
+
+### Inputs (each adds one thing)
+| Input | Size | Question |
+|---|---|---|
+| **A. current timestep** | 54 | how much does one instant tell? |
+| **B. raw window** | 150 × 54; every 10 ms → 15 × 54 = 810 (full 8,100 ≈ 4.5 GB at stride 10) | does history help? |
+| **C. hand-crafted features** from the window | a few hundred (per-channel stats, last values, deltas, `|v|`, `v²`, …) | does domain knowledge beat raw history? |
+
+### Two axes, one change at a time
+1. **Input ladder**, model fixed (ridge): A → B → C.
+2. **Model ladder**, input fixed (best of A/B/C): ridge → kernel ridge (boundary) → SVM (loss) → trees.
+
+### Course models: tier list for this project
+✓✓ very useful · ✓ useful · ~ possible but limited · ✗ not sensible. Sections refer to `Lessons/ML2_Topics_Index.md`.
+
+| Tier | Model (§) | A | B | C | Why |
+|---|---|---|---|---|---|
+| **S** | Ridge / RLS (§3) | ✓✓ | ✓✓ | ✓✓ | closed form, seconds; fixed model of the input ladder; the linear floor |
+| **A** | Kernel ridge, RBF (§4) | ✓✓ | ~ | ✓✓ | main non-linear course model, should fix "`v_z` near zero"; n³ cost → train on 10–20k subsample; distances on 810 raw values less meaningful |
+| **A** | Gradient boosting (§8) | ✓✓ | ✓ | ✓✓ | strongest on tabular data (0.949 on A alone in the stride experiment); fast, no scaling |
+| **B+** | Random forest / bagging (§8) | ✓ | ~ | ✓✓ | non-linear, little tuning; feature importance is a good slide |
+| **B+** | Kernel SVM, RBF (§7) | ✓ | ~ | ✓ | same boundary as kernel ridge, hinge loss → EMG-style 2×2; slow on 70k × 4 legs → subsample |
+| **B** | Linear SVM (§7) | ✓ | ✓ | ✓ | isolates the loss (ridge vs hinge, same boundary); one controlled comparison |
+| **B** | LASSO / L1-SVM (§3, §7) | ~ | ✓✓ | ✓ | on raw windows the zero weights show which lags/channels matter; interpretation more than score |
+| **B−** | MLP (§10) | ✓ | ✓ | ✓✓ | "φ fixed (kernel) vs φ learned"; optional (DL not mandatory); 0.930 on features in the old runs |
+| **C** | Decision tree (§8) | ✓ | ✗ | ✓ | high variance; useful only as a picture (depth-3 tree = learned thresholds) |
+| **C** | Bayesian linear regression (§9) | ✓ | ✓ | ✓ | same predictions as ridge (MAP); its predictive variance is interesting for the EKF — a remark, not a model |
+| **D** | 1D CNN / Transformer (§12–13) | ✗ | ✓ | ✗ | raw windows only; appendix curiosity; lost to features + MLP in the old runs |
+| **D** | Perceptron (§10) | ~ | ~ | ~ | historical; ridge does linear classification better |
+| — | SVR (§7) | ✗ | ✗ | ✗ | regression method |
+
+Not in the course (left out): kNN, logistic regression, RNN/LSTM.
+
+Course link for error bars: §9 covers the binomial estimator and the Clopper-Pearson interval — the
+frequentist confidence interval on a test error rate. It assumes independent test samples, so with our
+correlated windows it would be far too narrow (see Phase 2).
+
+### Core path
+1. ✅ Majority baseline.
+2. Ridge on A → B → C (input ladder).
+3. Kernel ridge on the best input (non-linear boundary).
+4. Linear SVM (+ RBF SVM if time) on the same input (loss) → 2×2 with ridge / kernel ridge.
+5. Gradient boosting or random forest on the same input, with feature importance.
+
+### Appendix candidates
+LASSO on the raw window (which lags matter); MLP; stride 1 vs 150 rerun; random-split comparison
+(the optimism we avoid); class weighting / threshold for precision.
 
 ## Presentation one-liners
 - "We predict whether each foot is on the ground now, from the last 150 ms of proprioception."
