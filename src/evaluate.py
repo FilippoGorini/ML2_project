@@ -25,8 +25,9 @@ def scores(y, p):
     return {**mean, "exact": np.mean((y == p).all(1)), "per_leg": per_leg}
 
 
-def report(name, y_test, p_test):
-    """Print and save test scores on every timestep, and on every 10th (stride-10 check)."""
+def report(name, y_test, p_test, validation=()):
+    """Print and save test scores on every timestep, and on every 10th (stride-10 check).
+    Also saves the validation scores of the hyperparameter search and the test predictions."""
     full, sub = scores(y_test, p_test), scores(y_test[::10], p_test[::10])
     print(f"\n{name} — test, every timestep (n={len(y_test)})")
     print(f"{'':6s}{'F1':>8s}{'prec':>8s}{'recall':>8s}{'acc':>8s}")
@@ -37,7 +38,9 @@ def report(name, y_test, p_test):
     print(f"every 10th timestep: F1 {sub['f1']:.4f}, exact-state {sub['exact']:.4f}")
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    (RESULTS_DIR / f"{name}.json").write_text(json.dumps({"test": full, "test_stride10": sub}, indent=2))
+    (RESULTS_DIR / f"{name}.json").write_text(
+        json.dumps({"test": full, "test_stride10": sub, "validation": list(validation)}, indent=2))
+    np.save(RESULTS_DIR / f"{name}_test_pred.npy", p_test.astype(np.uint8))
 
 
 if __name__ == "__main__":

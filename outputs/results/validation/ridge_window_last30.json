@@ -1,0 +1,56 @@
+[
+  {
+    "params": {
+      "ridgeclassifier__alpha": 0.001
+    },
+    "val_f1": 0.9286198369704398
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 0.01
+    },
+    "val_f1": 0.9286702130113095
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 0.1
+    },
+    "val_f1": 0.9286350566395144
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 1.0
+    },
+    "val_f1": 0.9287721925760303
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 10.0
+    },
+    "val_f1": 0.9285830204175903
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 100.0
+    },
+    "val_f1": 0.9281307876825848
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 1000.0
+    },
+    "val_f1": 0.9261238397468543
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 10000.0
+    },
+    "val_f1": 0.920338904852574
+  },
+  {
+    "params": {
+      "ridgeclassifier__alpha": 100000.0
+    },
+    "val_f1": 0.9063663377884326
+  }
+]

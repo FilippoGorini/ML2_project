@@ -37,6 +37,23 @@ IMU acceleration (3) and angular velocity (3), foot positions `p` (12) and veloc
 **Label:** contact state of the 4 feet (`RF, LF, RH, LH`) at the window's **last** timestep →
 "from the last 150 ms, is each foot on the ground *now*?" This is exactly how it would run on the robot.
 
+**Where 150 comes from:** a convention. The dataset paper (Lin et al., CoRL 2021, arXiv 2106.15713)
+uses w = 150 without justification or ablation ("to allow the network to infer from the time domain");
+later papers on this dataset (Ordonez-Apraez et al. 2023, MI-HGNN 2024) keep it "for a fair comparison".
+No window-length ablation found on this dataset. → we keep 150 ms as the span and choose which lags
+inside it to use on validation (Phase 3).
+
+**How the labels were made** (Lin et al. 2021, Sec. 4.3 + Appendix): not force sensors — computed
+**offline from the foot height** in the hip frame: low-pass filter, local minima/maxima using past **and
+future** samples, contact = between the minima (cut-off differs for trot vs pronk/gallop). Consequences:
+- the label is a smoothed, non-causal function of one of our inputs → foot height dominates simple models;
+- the model must approximate, from the past only, a filter that also looks ahead → history helps;
+- labels are themselves an estimate: some "errors" at touchdown/lift-off may be label noise.
+
+**Sampling:** joint/foot data recorded at 500 Hz and upsampled to 1 kHz (IMU at 1 kHz). In our files
+the value repeats on ~63% of consecutive timesteps for joints/feet and ~79% for the IMU (effective update
+every ~3–5 ms) → a 150-step window holds only ~40–50 distinct readings per channel.
+
 **Application:** the contact estimate feeds a contact-aided EKF for state estimation. The EKF treats a
 foot in contact as fixed on the ground. Hence:
 - **false contact** (foot swinging, model says contact) → wrong velocity injected → estimate drifts. **Harmful.**
@@ -48,6 +65,8 @@ foot in contact as fixed on the ground. Hence:
 - **Label artefact at the end**: in the last 100–270 ms of every ground recording the labels stop
   (all feet "in the air") while the robot is still walking. Would have landed entirely in the test set.
   → **drop the last 300 ms of every recording** (`TRIM_END` in `src/data.py`).
+  Root cause (from the label algorithm above): it needs a *future* peak to close the last contact, so
+  the last stride of each recording never gets labelled.
   Rule for trimming: only when labels are wrong, not when data "looks different" — realistic
   but unusual data stays (it is what the deployed model will face).
 - **Air recordings kept**: legs move, nothing touches → exactly the examples that teach "no false contacts".
@@ -158,8 +177,129 @@ rules, one per leg. Every leg's most frequent label is "no contact" → always p
 - Exact-state 0.368 = share of test timesteps with all feet in the air (air recordings + trot flight phases).
 - Every 10th timestep: exact-state 0.3685 vs 0.3679 → the subsample agrees.
 
+### Ridge — current timestep (`python -m src.train ridge current`)
+Standardized inputs → `RidgeClassifier`, α ∈ 10⁻³…10⁵ on validation, refit on train+val.
+
+| | F1 | precision | recall | accuracy | exact-state |
+|---|---|---|---|---|---|
+| ridge, current (test) | 0.840 | 0.872 | 0.811 | 0.897 | 0.799 |
+
+- Validation curve flat up to α = 10 → **under-fitting**: 54 weights, 85k samples; the limit is the
+  linear boundary, not the tuning (as in the EMG project).
+- Precision > recall: errors are mostly missed contacts (safe side for the EKF).
+- Weak on pronking (0.61) and galloping (0.58); trot terrains 0.85–0.95. Val (0.888) > test (0.840):
+  gap concentrated in a few recordings (gait drift between middle and end of a recording).
+- Weights: each leg uses its own foot height and knee angle, and its **trot partner's** foot height;
+  foot velocities barely used (not linearly usable).
+
+### Window design (validation only, ridge)
+Which lags inside the 150 ms window? All variants 15 lags × 54 = 810 values (same size, fair comparison);
+chosen on **validation**, test run only for the winner. (Probably not presented — the presentation can
+start from the chosen window.)
+
+| input | lags (ms before label) | val F1 |
+|---|---|---|
+| current | 0 | 0.8875 |
+| last 15 ms | 0…14 | 0.9182 |
+| last 30 ms | 0, 2, …, 28 | 0.9288 |
+| uniform | 0, 10, …, 140 | 0.9412 |
+| **log-spaced** | 0, 1, 2, 3, 5, 8, 12, 18, 26, 37, 52, 72, 98, 128, 149 | **0.9459** |
+
+- **Longer context matters**: 15 → 30 → 150 ms keeps improving (gait phase is invisible in short windows).
+- **Recent detail matters**: at equal size and span, dense-recent (log) beats uniform by 0.5 points —
+  plain 10 ms subsampling loses the last milliseconds, where touchdown shows up first.
+- Full 150 × 54 window (8,100 values) not run (needs ~15–20 GB); possible ceiling check on the workstation.
+- α again barely matters; "ill-conditioned" warnings expected (repeated samples → identical columns).
+
+→ **chosen raw-window input: `window_log`.**
+
+### Ridge — raw window, log-spaced lags (`python -m src.train ridge window_log`)
+
+| | F1 | precision | recall | accuracy | exact-state |
+|---|---|---|---|---|---|
+| ridge, current (test) | 0.840 | 0.872 | 0.811 | 0.897 | 0.799 |
+| **ridge, window_log (test)** | **0.930** | 0.934 | 0.925 | 0.953 | 0.879 |
+
+- **History is worth +9 points** for a linear model (best α = 0.1, curve flat again).
+- Gains exactly where the current timestep failed: **pronking 0.61 → 0.91, galloping 0.58 → 0.78**;
+  other terrains +0.01…0.08; false contacts in the air recordings 1.4% → 0.
+- Val → test gap shrinks from 4.7 to 1.6 points (less sensitive to gait drift within a recording).
+- Precision and recall now balanced (0.93 / 0.93). LF still the hardest leg (0.914).
+- Weight per lag: lag 0 largest, but all lags up to 149 ms used; opposite-sign weights on near-identical
+  recent lags = differences → history lets a linear model compute derivatives/trends.
+
+### Hand-crafted features (input C)
+Design principle: for ridge, features that are **linear** in the raw window (means, deltas) add little —
+ridge can already form any weighted sum of lags. Features help a linear model only if **non-linear**
+(spread, extremes, absolute values). Linear summaries still matter for compactness (kernels, trees).
+
+All computed over the 150 ms window ending at the label (`src/features.py`):
+
+| group | features | values | reason |
+|---|---|---|---|
+| **g1** linear summaries | current value; change over last 5 ms and 50 ms; window mean — per channel | 216 | strongest single input; touchdown = abrupt stop (5 ms); descending/rising over the stride (50 ms); low-pass context |
+| **g2 stats** | window std, min, max — per channel | 162 | activity level (EMG lesson: amplitude); extremes of the stride |
+| **g2 foot** | per foot: height above its window minimum; speed ‖v‖ now; mean speed over last 20 ms | 12 | "foot at its lowest" = the label's definition, and removes the body-height offset; "foot stationary" — the non-linear fix for `v_z` near zero |
+
+Validation F1 (ridge, best α; α flat again everywhere):
+
+| input | values | val F1 |
+|---|---|---|
+| window_log (raw) | 810 | 0.9459 |
+| feat_g1 | 216 | 0.9351 |
+| feat_g2 | 174 | 0.9341 |
+| **feat_all** (g1 + g2) | 390 | **0.9513** |
+
+- Each group alone ≈ 1 point **below** the raw window; g1 lacks the fine recent lags (only a 5 ms delta).
+- The non-linear group alone carries as much as the linear one.
+- Together **+1.6 over either alone, +0.5 over the raw window with half the values** → complementary.
+
+Ablation of g2 (validation):
+
+| input | values | val F1 | gain over g1 |
+|---|---|---|---|
+| feat_g1 | 216 | 0.9351 | — |
+| + foot | 228 | 0.9407 | +0.6 |
+| + stats | 378 | 0.9491 | +1.4 |
+| + both (feat_all) | 390 | **0.9513** | +1.6 |
+
+- Generic stats give most of the gain; the 12 foot features are ~5× more efficient **per value**.
+- On top of stats the foot features add only +0.2: "height above window minimum" = current − min, which
+  ridge can already form from g1 (current) + stats (min) → redundant there; the rest comes from foot speed ‖v‖.
+→ **chosen: `feat_all`** (best on val; foot features cost 12 values and are the most explainable).
+
+All these choices (window lags, feature groups) were made with `--val-only`: each option fitted on train
+and scored on validation; test inputs never built. Test is used once, for the chosen input.
+
+### Ridge — hand-crafted features, test (`python -m src.train ridge feat_all`)
+
+| input (ridge) | values | F1 | precision | recall | accuracy | exact-state | false-contact rate | missed-contact rate |
+|---|---|---|---|---|---|---|---|---|
+| current | 54 | 0.840 | 0.872 | 0.811 | 0.897 | 0.799 | 6.0% | 18.9% |
+| window_log | 810 | 0.930 | 0.934 | 0.925 | 0.953 | 0.879 | 3.3% | 7.5% |
+| **feat_all** | 390 | **0.946** | 0.938 | 0.955 | 0.964 | 0.899 | 3.2% | 4.6% |
+
+(rates over all legs: false contacts / true air timesteps, missed contacts / true contact timesteps)
+
+- **Features beat the raw window by +1.7 points with half the values** — domain knowledge pays off even for
+  a linear model, because the useful features are non-linear in the raw signals.
+- **The whole gain is found contacts**: missed contacts 7.5% → 4.6%, false contacts unchanged (3.3% → 3.2%).
+  Recall now exceeds precision only because recall rose — the model did not become riskier for the EKF.
+- **Biggest gains on the non-trot gaits again**: pronking 0.906 → 0.958, galloping 0.781 → 0.832, and grass
+  0.916 → 0.949; trot terrains already ~0.95–0.97 change by ±0.01.
+- **Val → test gap only 0.5 points** (0.951 → 0.946; was 4.7 for current, 1.6 for the window): window
+  statistics are less sensitive to the gait drift within a recording.
+- α flat again → still a **linear model limited by its boundary**; the input ladder is done:
+  **0 → 0.840 → 0.930 → 0.946** (baseline → instant → raw history → features).
+- Galloping (0.83) and LF (0.935) remain the weak spots.
+- Weights per value: largest on the current value and on **foot height above its window minimum** (the
+  feature mirroring how labels were made); small on 5 ms change and foot speed. Correlated features share
+  weight, so the validation ablation, not the weights, is the measure of importance.
+
+→ **`feat_all` is the input for the model ladder** (kernel ridge, SVM, trees).
+
 ### Next
-Ridge on the current timestep only (54 values, no history).
+Model ladder on `feat_all`: kernel ridge (RBF) — does a non-linear boundary help on top of the features?
 
 ## Plan
 
@@ -198,6 +338,30 @@ Not in the course (left out): kNN, logistic regression, RNN/LSTM.
 Course link for error bars: §9 covers the binomial estimator and the Clopper-Pearson interval — the
 frequentist confidence interval on a test error rate. It assumes independent test samples, so with our
 correlated windows it would be far too narrow (see Phase 2).
+
+### Why not (high-degree) polynomial regression
+Polynomial regression and ridge are not alternatives: the **feature map** φ(x) decides what the model can
+represent (φ(x) = x → hyperplane; φ(x) = all monomials up to degree p → polynomial), **ridge** is how the
+weights are fitted (least squares + λ‖w‖²) for any φ. Polynomial regression with regularization = ridge on
+polynomial features; kernel ridge with the polynomial kernel (1 + xᵀx′)ᵖ = the same model, computed differently.
+
+The problem is computing φ explicitly: with d = 54 inputs there are C(54 + p, p) monomials.
+
+| degree p | features | explicit train matrix (70k windows) |
+|---|---|---|
+| 1 | 55 | 30 MB |
+| 2 | 1,540 | 0.9 GB — fine |
+| 3 | 29,260 | 16 GB + a 29k × 29k system — too much |
+| 10 | ≈ 1.5 × 10¹¹ | impossible |
+
+Curse of dimensionality (course §2): in 1-D, degree 10 is 11 coefficients; in 54-D it explodes.
+**Kernel trick** (§4): the cost depends on the number of samples n (an n × n system), not on the number of
+features — same cost for any degree, even infinite (RBF). Hence kernel ridge instead of explicit
+high-degree polynomials (trained on a subsample because of the n³ cost).
+
+Nuances: low degrees are fine explicitly (degree 2 = 1,540 features is tractable and contains `v_z²`, the
+fix suggested by the scatter plot) — a possible step between ridge and kernel ridge. And higher degree is
+not automatically better: huge variance and wild extrapolation; RBF kernels are smoother and more local.
 
 ### Core path
 1. ✅ Majority baseline.

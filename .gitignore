@@ -19,3 +19,6 @@ env/
 .DS_Store
 
 Lessons/
+
+# Test predictions (regenerate via src.train)
+outputs/results/*.npy

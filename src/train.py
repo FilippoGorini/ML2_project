@@ -1,29 +1,63 @@
-"""Train one model on the default split and report test scores.
+"""Tune a model on validation, refit on train+val, report test scores.
 
     python -m src.train majority
+    python -m src.train ridge current
+    python -m src.train ridge window_log --val-only    # tune and score on validation only, no test
 """
+import json
 import sys
+from pathlib import Path
 
+import joblib
 import numpy as np
-from sklearn.dummy import DummyClassifier
+from sklearn.model_selection import GridSearchCV, PredefinedSplit
 
 from src.data import labels, load_recordings, split
-from src.evaluate import report
+from src.evaluate import RESULTS_DIR, report
+from src.features import INPUTS
+from src.models import MODELS
 
-MODELS = {
-    # ignores the input, always predicts each leg's most frequent training label
-    "majority": lambda: DummyClassifier(strategy="most_frequent"),
-}
+MODELS_DIR = Path(__file__).resolve().parent.parent / "outputs" / "models"
+CHUNK = 20_000  # test windows predicted at a time (kernel models / wide inputs would not fit otherwise)
 
 
-def main(name):
+def main(model_name, input_name="none", val_only=False):
+    name = model_name if input_name == "none" else f"{model_name}_{input_name}"
     recs = load_recordings()
     sp = split(recs)
-    y_train, y_test = labels(recs, sp["train"]), labels(recs, sp["test"])
+    make_input, (make_model, grid) = INPUTS[input_name], MODELS[model_name]
+    n_train = sum(len(e) for e in sp["train"].values())
+    X = np.concatenate([make_input(recs, sp["train"]), make_input(recs, sp["val"])])
+    y = np.concatenate([labels(recs, sp["train"]), labels(recs, sp["val"])])
 
-    model = MODELS[name]().fit(np.zeros((len(y_train), 1)), y_train)
-    report(name, y_test, model.predict(np.zeros((len(y_test), 1))))
+    # One fixed train -> val fold (no random k-fold: neighbouring windows are near-duplicates).
+    # Score = macro per-leg F1. After choosing, refit on train+val and test once.
+    search = GridSearchCV(
+        make_model(), grid,
+        cv=PredefinedSplit(np.r_[np.full(n_train, -1), np.zeros(len(X) - n_train)]),
+        scoring="f1_macro", refit=not val_only,
+        n_jobs=2,  # each parallel fit copies the training data; more workers can run out of RAM on wide inputs
+    ).fit(X, y)
+    del X, y
+
+    validation = [{"params": p, "val_f1": s}
+                  for p, s in zip(search.cv_results_["params"], search.cv_results_["mean_test_score"])]
+    for v in validation:
+        print(f"  {v['params']}  val F1 {v['val_f1']:.4f}")
+    print(f"best: {search.best_params_}  val F1 {search.best_score_:.4f}")
+
+    if val_only:  # kept apart from outputs/results/*.json, which hold only test-evaluated models
+        (RESULTS_DIR / "validation").mkdir(parents=True, exist_ok=True)
+        (RESULTS_DIR / "validation" / f"{name}.json").write_text(json.dumps(validation, indent=2))
+        return
+
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    joblib.dump(search.best_estimator_, MODELS_DIR / f"{name}.joblib")
+    X_test = make_input(recs, sp["test"])
+    p_test = np.concatenate([search.predict(X_test[i:i + CHUNK]) for i in range(0, len(X_test), CHUNK)])
+    report(name, labels(recs, sp["test"]), p_test, validation)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    main(*args, val_only="--val-only" in sys.argv)
