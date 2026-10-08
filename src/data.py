@@ -31,21 +31,23 @@ def load_recordings(data_dir=DATA_DIR):
     return recs
 
 
-def split_ends(n, train=0.7, val=0.15, stride=1):
-    """Window end indices (train, val, test) for one recording of n timesteps."""
+def split_ends(n, train=0.7, val=0.15, stride=10, test_stride=1):
+    """Window end indices (train, val, test) for one recording of n timesteps.
+    Train and val use `stride` (val is scored many times in grid searches); test uses
+    `test_stride` (scored once per model, so every timestep can be scored)."""
     first = WINDOW - 1  # first index with a full window behind it
     a = first + int((n - first) * train)
     b = first + int((n - first) * (train + val))
     return (np.arange(first, a, stride),
             np.arange(a + WINDOW, b, stride),  # first val window starts right after the last train step
-            np.arange(b + WINDOW, n, stride))
+            np.arange(b + WINDOW, n, test_stride))
 
 
-def split(recs, stride=1):
+def split(recs, stride=10, test_stride=1):
     """{"train"|"val"|"test": {name: end indices}} for every recording."""
     out = {"train": {}, "val": {}, "test": {}}
     for name, (X, _) in recs.items():
-        for part, ends in zip(out, split_ends(len(X), stride=stride)):
+        for part, ends in zip(out, split_ends(len(X), stride=stride, test_stride=test_stride)):
             out[part][name] = ends
     return out
 
@@ -61,9 +63,9 @@ def check_no_overlap(sp):
 
 if __name__ == "__main__":
     recs = load_recordings()
-    sp = split(recs, stride=1)
+    sp = split(recs)
     check_no_overlap(sp)
-    print(f"{len(recs)} recordings, no train/val/test overlap\n")
+    print(f"{len(recs)} recordings, no train/val/test overlap (train/val stride 10, test stride 1)\n")
     print(f"{'recording':30s} {'steps':>7s} {'train':>7s} {'val':>7s} {'test':>7s}")
     for name, (X, _) in recs.items():
         print(f"{name:30s} {len(X):7d} " + " ".join(f"{len(sp[p][name]):7d}" for p in sp))
