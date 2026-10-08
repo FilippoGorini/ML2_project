@@ -298,8 +298,51 @@ and scored on validation; test inputs never built. Test is used once, for the ch
 
 → **`feat_all` is the input for the model ladder** (kernel ridge, SVM, trees).
 
+---
+
+## Phase 4 — Model ladder (input fixed: `feat_all`)
+
+### Kernel methods are trained on 10k windows
+Kernel methods work on pairs of training samples: kernel ridge stores an n × n kernel matrix and solves it
+in ~n³ operations. At the full training set (70,476 windows; 85,358 for the train+val refit) the matrix is
+**40–58 GB** in float64 → impossible here (14 GB) and on the lab workstation (30 GB). The problem is **RAM**;
+the time (~1–2 h for the grid on the workstation) would be acceptable. (The EMG group had ~7k training
+windows → 0.4 GB, no issue.)
+- Kernel methods use **10,000 training windows taken evenly in time** (`Subsampled`, `N_KERNEL` in
+  `src/models.py`) — the same windows for every kernel model (kernel ridge now, RBF SVM later).
+- Only kernel methods need this; ridge, linear SVM, trees keep the full stride-10 training set.
+- **Fair comparison**: ridge is also trained on the same 10k windows (`ridge_10k`): ridge vs ridge_10k = cost of
+  the subsample; ridge_10k vs kernel ridge = effect of the non-linear boundary on identical data.
+- Test is always every timestep.
+
+### Kernel ridge, RBF (`python -m src.train krr feat_all`)
+Same loss and penalty as ridge, RBF kernel k(x, x′) = exp(−γ‖x − x′‖²), targets ±1, contact if output > 0.
+sklearn's `KernelRidge` has no bias term → **the mean target is subtracted before fitting and added back at
+prediction** (= the intercept ridge has; without it the 32/68 offset would have to be built from the kernel).
+γ = s / 390. Grid α ∈ {0.01, 0.03, 0.1, 0.3, 1} × s ∈ {0.1, 0.2, 0.3, 0.5, 1, 2, 3} (35 combinations, ~15 min on this PC).
+
+| model (feat_all) | train windows | val F1 | test F1 | precision | recall | exact-state | false contact | missed contact |
+|---|---|---|---|---|---|---|---|---|
+| ridge | 70k | 0.951 | 0.946 | 0.938 | 0.955 | 0.899 | 3.2% | 4.6% |
+| ridge_10k | 10k | 0.951 | 0.942 | 0.936 | 0.949 | 0.891 | 3.3% | 5.1% |
+| **kernel ridge (RBF)** | 10k | 0.963 | **0.956** | 0.951 | 0.960 | 0.909 | 2.5% | 4.0% |
+
+- **The subsample costs ridge little**: same validation, −0.4 on test.
+- **The RBF kernel adds +1.4 on identical data** (+1.0 over ridge on 7× more windows): a non-linear boundary
+  helps on top of the features.
+- **Both errors drop**: false contacts 3.3% → 2.5%, missed 5.1% → 4.0%.
+- **Gains on every ground recording**, largest on the hardest: galloping 0.818 → 0.868; pronking, small
+  pebble, old asphalt ≈ +0.02; grass, rock road ≈ 0.
+- **Hyperparameters: flat optimum** along a diagonal band (smaller α pairs with smaller γ); best α = 0.03,
+  s = 0.3 (val 0.9633), inside the grid; ~10 combinations within 0.001 of it → **performance does not hinge on
+  tuning**. On a flat plateau the validation winner is partly chance ("winner's curse"), so validation differences
+  below ~0.1 point are not real.
+- Large γ (s ≥ 2) clearly worse at every α: kernel too local for 10k windows in 390-D. α and γ interact → searched together.
+- Notebook: `VAL_PLOT_3D` at the top switches the validation plot between a 2-D heatmap and a 3-D surface.
+
 ### Next
-Model ladder on `feat_all`: kernel ridge (RBF) — does a non-linear boundary help on top of the features?
+SVM: linear (hinge loss vs ridge's squared loss, same boundary) and RBF (hinge vs kernel ridge, same 10k
+windows) → the EMG-style 2×2 of boundary × loss.
 
 ## Plan
 
@@ -365,8 +408,8 @@ not automatically better: huge variance and wild extrapolation; RBF kernels are 
 
 ### Core path
 1. ✅ Majority baseline.
-2. Ridge on A → B → C (input ladder).
-3. Kernel ridge on the best input (non-linear boundary).
+2. ✅ Ridge on A → B → C (input ladder): 0.840 → 0.930 → 0.946.
+3. ✅ Kernel ridge on the best input (non-linear boundary): 0.956.
 4. Linear SVM (+ RBF SVM if time) on the same input (loss) → 2×2 with ridge / kernel ridge.
 5. Gradient boosting or random forest on the same input, with feature importance.
 

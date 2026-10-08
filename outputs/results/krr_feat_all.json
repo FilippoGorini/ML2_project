@@ -1,0 +1,315 @@
+{
+  "test": {
+    "f1": 0.9557613606964233,
+    "precision": 0.9511456967658231,
+    "recall": 0.9604396529949627,
+    "accuracy": 0.9702093262437569,
+    "exact": 0.9090701316859703,
+    "per_leg": {
+      "RF": {
+        "f1": 0.9541723326749184,
+        "precision": 0.9472989219338181,
+        "recall": 0.9611462166053432,
+        "accuracy": 0.9689640569227563
+      },
+      "LF": {
+        "f1": 0.9499919211504282,
+        "precision": 0.9423219473104277,
+        "recall": 0.9577877782076605,
+        "accuracy": 0.9667121528874787
+      },
+      "RH": {
+        "f1": 0.9574328227396769,
+        "precision": 0.9568610276113312,
+        "recall": 0.9580053016562693,
+        "accuracy": 0.9712697377708167
+      },
+      "LH": {
+        "f1": 0.9614483662206694,
+        "precision": 0.9581008902077152,
+        "recall": 0.9648193155105781,
+        "accuracy": 0.9738913573939757
+      }
+    }
+  },
+  "test_stride10": {
+    "f1": 0.9558366911071665,
+    "precision": 0.9511202168013021,
+    "recall": 0.9606140192305765,
+    "accuracy": 0.9702392955568999,
+    "exact": 0.9094575519257915,
+    "per_leg": {
+      "RF": {
+        "f1": 0.9543197616683218,
+        "precision": 0.9494171112428373,
+        "recall": 0.959273308045518,
+        "accuracy": 0.9690797875915843
+      },
+      "LF": {
+        "f1": 0.9497274379164143,
+        "precision": 0.9409881976395279,
+        "recall": 0.9586305278174037,
+        "accuracy": 0.9665255091752369
+      },
+      "RH": {
+        "f1": 0.959378733572282,
+        "precision": 0.9569016881827209,
+        "recall": 0.9618686364543821,
+        "accuracy": 0.9725751159507965
+      },
+      "LH": {
+        "f1": 0.9599208312716477,
+        "precision": 0.9571738701401223,
+        "recall": 0.962683604605002,
+        "accuracy": 0.9727767695099818
+      }
+    }
+  },
+  "validation": [
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.01,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9631202417350789
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.01,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.2
+      },
+      "val_f1": 0.9629913640592682
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.01,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9622829026657833
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.01,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.5
+      },
+      "val_f1": 0.9613942660006947
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.01,
+        "estimator__kernelridgeclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9590449189757372
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.01,
+        "estimator__kernelridgeclassifier__gamma_scale": 2.0
+      },
+      "val_f1": 0.9504360437999179
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.01,
+        "estimator__kernelridgeclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9385719981511419
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.03,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9620884732963481
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.03,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.2
+      },
+      "val_f1": 0.9631632062765196
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.03,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9632627268718266
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.03,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.5
+      },
+      "val_f1": 0.962915732288586
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.03,
+        "estimator__kernelridgeclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9607300252801558
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.03,
+        "estimator__kernelridgeclassifier__gamma_scale": 2.0
+      },
+      "val_f1": 0.951008750430151
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.03,
+        "estimator__kernelridgeclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9384931492771265
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.1,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9602040490896356
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.1,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.2
+      },
+      "val_f1": 0.9623316323419082
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.1,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9631852920936064
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.1,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.5
+      },
+      "val_f1": 0.963189462935182
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.1,
+        "estimator__kernelridgeclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9610637072263628
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.1,
+        "estimator__kernelridgeclassifier__gamma_scale": 2.0
+      },
+      "val_f1": 0.9513607895007952
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.1,
+        "estimator__kernelridgeclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9376096519290849
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.3,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9565290147121417
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.3,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.2
+      },
+      "val_f1": 0.9602990999844572
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.3,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9613263795607306
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.3,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.5
+      },
+      "val_f1": 0.9623950322230521
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.3,
+        "estimator__kernelridgeclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9611617716914754
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.3,
+        "estimator__kernelridgeclassifier__gamma_scale": 2.0
+      },
+      "val_f1": 0.9509034911281612
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 0.3,
+        "estimator__kernelridgeclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9364780926788439
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 1.0,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9519708674335916
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 1.0,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.2
+      },
+      "val_f1": 0.9561660633055014
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 1.0,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9583991089769216
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 1.0,
+        "estimator__kernelridgeclassifier__gamma_scale": 0.5
+      },
+      "val_f1": 0.9599504146285807
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 1.0,
+        "estimator__kernelridgeclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9588999559271111
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 1.0,
+        "estimator__kernelridgeclassifier__gamma_scale": 2.0
+      },
+      "val_f1": 0.9481983079625607
+    },
+    {
+      "params": {
+        "estimator__kernelridgeclassifier__alpha": 1.0,
+        "estimator__kernelridgeclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9320065767982684
+    }
+  ]
+}
