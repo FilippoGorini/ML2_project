@@ -1,0 +1,74 @@
+{
+  "test": {
+    "f1": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "accuracy": 0.6647553491123465,
+    "exact": 0.3678871762467818,
+    "per_leg": {
+      "RF": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.6638411432950397
+      },
+      "LF": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.6698843126315012
+      },
+      "RH": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.6627319965313956
+      },
+      "LH": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.6625639439914495
+      }
+    }
+  },
+  "test_stride10": {
+    "f1": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "accuracy": 0.6645324998319554,
+    "exact": 0.3684882704846407,
+    "per_leg": {
+      "RF": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.663305774013578
+      },
+      "LF": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.6701619950258789
+      },
+      "RH": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.663305774013578
+      },
+      "LH": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "accuracy": 0.6613564562747866
+      }
+    }
+  },
+  "validation": [
+    {
+      "params": {},
+      "val_f1": 0.0
+    }
+  ]
+}

@@ -506,6 +506,38 @@ test predictions only.
   12.5 ms). Better models push their errors to the transitions (ridge features 59% → kernel ridge 65% → forest 69% →
   boosting 72%). Boosting errors > 20 ms from a transition: ~1,500 leg-timesteps, 0.25% of all scored.
 
+---
+
+## Phase 5 — Appendix experiments (`notebooks/04_appendix.ipynb`)
+Each reruns every tested model with one protocol change (`src/train.py` options; results in their own folder).
+
+### Non-overlapping windows (`--stride=150`, results in `stride150/`)
+Train / val / refit windows 4,707 / 997 / 5,704 (stride 10: 70,476 / 14,882 / 85,358); test unchanged (every timestep).
+At stride 150 every model sees the same 5.7k windows (`_10k` references identical → not rerun). Whole run ~10–15 min.
+
+| test F1 | ridge current | ridge window | ridge features | linear SVM | kernel ridge | RBF SVM | tree | forest | boosting |
+|---|---|---|---|---|---|---|---|---|---|
+| stride 10 | 0.840 | 0.930 | 0.946 | 0.952 | 0.956 | 0.953 | 0.940 | 0.967 | **0.972** |
+| stride 150 | 0.837 | 0.921 | 0.942 | 0.939 | 0.953 | 0.949 | 0.898 | 0.952 | **0.958** |
+| change | −0.3 | −0.9 | −0.5 | −1.3 | −0.3 | −0.4 | −4.1 | −1.5 | −1.4 |
+
+- Every model loses: overlapping windows are free extra data, not harmful duplicates (confirms Phase 2).
+- Loss follows data used × data needed: kernel models (already at 10k) and ridge (linear, needs little) lose ≤ 0.9;
+  linear SVM, forest, boosting −1.3 to −1.5; single tree −4.1.
+- Boosting still best, but its lead over kernel ridge shrinks 1.6 → 0.5 (consistent with `gb_10k`: ~1.0 of it was data).
+- Both errors grow (boosting false contacts 1.6% → 2.3%); galloping hit hardest (one recording → ~230 training windows).
+- Less data → validation picks stronger regularization (ridge α 0.1 → 10, linear SVM C 0.3 → 0.01, kernel ridge
+  α 0.03 → 0.1 and smoother γ, boosting 800 → 400 trees); the single tree goes from leaf size 50 to 1.
+
+### Unseen recordings — protocol B (`--protocol-b`, results in `protocol_b/`; planned)
+The papers' split (Ordonez-Apraez et al. RSS 2023; MI-HGNN, MS-HGNN): test = all of `air_jumping_gait`,
+`concrete_pronking`, `concrete_right_circle`, `forest`, `small_pebble`; the other 10 recordings → first 85% train, gap,
+last 15% val (`split_b` in `src/data.py`). Windows: train / val / test = 53,686 / 9,330 / 375,162 at stride 10;
+3,583 / 625 / 375,162 at stride 150. Everything else as protocol A (grids, refit on train+val, test every timestep).
+Differences from the papers to state when comparing: we refit on train+val (they train on train only), we drop the last
+300 ms of each recording (label artefact) and score windows from timestep 150 on.
+Plan: stride 150 first (fast), stride 10 later.
+
 ## Plan
 
 ### Inputs (each adds one thing)

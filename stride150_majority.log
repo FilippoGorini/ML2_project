@@ -1,0 +1,12 @@
+  {}  val F1 0.0000
+best: {}  val F1 0.0000
+
+stride150/majority — test, every timestep (n=148763)
+            F1    prec  recall     acc
+RF      0.0000  0.0000  0.0000  0.6638
+LF      0.0000  0.0000  0.0000  0.6699
+RH      0.0000  0.0000  0.0000  0.6627
+LH      0.0000  0.0000  0.0000  0.6626
+mean    0.0000  0.0000  0.0000  0.6648
+exact-state accuracy 0.3679
+every 10th timestep: F1 0.0000, exact-state 0.3685

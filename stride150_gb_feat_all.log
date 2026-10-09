@@ -1,0 +1,27 @@
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 15}  val F1 0.9500
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 31}  val F1 0.9502
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 63}  val F1 0.9514
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 127}  val F1 0.9511
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 15}  val F1 0.9522
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 31}  val F1 0.9531
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 63}  val F1 0.9518
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 127}  val F1 0.9500
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 15}  val F1 0.9532
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 31}  val F1 0.9532
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 63}  val F1 0.9535
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 127}  val F1 0.9500
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 15}  val F1 0.9529
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 31}  val F1 0.9529
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 63}  val F1 0.9532
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 127}  val F1 0.9511
+best: {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 63}  val F1 0.9535
+
+stride150/gb_feat_all — test, every timestep (n=148763)
+            F1    prec  recall     acc
+RF      0.9602  0.9564  0.9640  0.9731
+LF      0.9481  0.9433  0.9530  0.9656
+RH      0.9583  0.9538  0.9629  0.9718
+LH      0.9665  0.9656  0.9675  0.9774
+mean    0.9583  0.9548  0.9619  0.9720
+exact-state accuracy 0.9123
+every 10th timestep: F1 0.9581, exact-state 0.9123

@@ -5,6 +5,7 @@
     python -m src.train ridge window_log --val-only    # tune and score on validation only, no test
     python -m src.train ridge feat_all --stride=150    # train/val stride 150 (non-overlapping windows);
                                                        # saved under stride150/ (default stride 10)
+    python -m src.train ridge feat_all --protocol-b    # unseen recordings (src/data.py); saved under protocol_b/
 """
 import json
 import sys
@@ -14,7 +15,7 @@ import joblib
 import numpy as np
 from sklearn.model_selection import GridSearchCV, PredefinedSplit
 
-from src.data import labels, load_recordings, split
+from src.data import labels, load_recordings, split, split_b
 from src.evaluate import RESULTS_DIR, report
 from src.features import INPUTS
 from src.models import MODELS
@@ -23,12 +24,14 @@ MODELS_DIR = Path(__file__).resolve().parent.parent / "outputs" / "models"
 CHUNK = 20_000  # test windows predicted at a time (kernel models / wide inputs would not fit otherwise)
 
 
-def main(model_name, input_name="none", val_only=False, stride=10):
+def main(model_name, input_name="none", val_only=False, stride=10, protocol_b=False):
     name = model_name if input_name == "none" else f"{model_name}_{input_name}"
     if stride != 10:
         name = f"stride{stride}/{name}"
+    if protocol_b:
+        name = f"protocol_b/{name}"
     recs = load_recordings()
-    sp = split(recs, stride=stride)
+    sp = (split_b if protocol_b else split)(recs, stride=stride)
     make_input, (make_model, grid) = INPUTS[input_name], MODELS[model_name]
     n_train = sum(len(e) for e in sp["train"].values())
     X = np.concatenate([make_input(recs, sp["train"]), make_input(recs, sp["val"])])
@@ -65,4 +68,5 @@ def main(model_name, input_name="none", val_only=False, stride=10):
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     stride = [int(a.split("=")[1]) for a in sys.argv if a.startswith("--stride=")]
-    main(*args, val_only="--val-only" in sys.argv, stride=stride[0] if stride else 10)
+    main(*args, val_only="--val-only" in sys.argv, stride=stride[0] if stride else 10,
+         protocol_b="--protocol-b" in sys.argv)

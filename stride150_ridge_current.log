@@ -1,0 +1,20 @@
+  {'ridgeclassifier__alpha': np.float64(0.001)}  val F1 0.8824
+  {'ridgeclassifier__alpha': np.float64(0.01)}  val F1 0.8828
+  {'ridgeclassifier__alpha': np.float64(0.1)}  val F1 0.8828
+  {'ridgeclassifier__alpha': np.float64(1.0)}  val F1 0.8826
+  {'ridgeclassifier__alpha': np.float64(10.0)}  val F1 0.8803
+  {'ridgeclassifier__alpha': np.float64(100.0)}  val F1 0.8726
+  {'ridgeclassifier__alpha': np.float64(1000.0)}  val F1 0.8533
+  {'ridgeclassifier__alpha': np.float64(10000.0)}  val F1 0.8069
+  {'ridgeclassifier__alpha': np.float64(100000.0)}  val F1 0.0090
+best: {'ridgeclassifier__alpha': np.float64(0.01)}  val F1 0.8828
+
+stride150/ridge_current — test, every timestep (n=148763)
+            F1    prec  recall     acc
+RF      0.8397  0.8744  0.8077  0.8964
+LF      0.8282  0.8560  0.8022  0.8901
+RH      0.8389  0.8651  0.8143  0.8946
+LH      0.8423  0.8847  0.8039  0.8984
+mean    0.8373  0.8700  0.8070  0.8949
+exact-state accuracy 0.7928
+every 10th timestep: F1 0.8390, exact-state 0.7949

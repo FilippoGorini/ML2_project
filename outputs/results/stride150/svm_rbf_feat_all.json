@@ -1,0 +1,266 @@
+{
+  "test": {
+    "f1": 0.9485747552803245,
+    "precision": 0.9455636580762146,
+    "recall": 0.9516437076204528,
+    "accuracy": 0.9654265509568911,
+    "exact": 0.8967417973555253,
+    "per_leg": {
+      "RF": {
+        "f1": 0.9520281200695013,
+        "precision": 0.950831770854111,
+        "recall": 0.9532274836026235,
+        "accuracy": 0.9677070239239596
+      },
+      "LF": {
+        "f1": 0.9387479735376746,
+        "precision": 0.928528743874746,
+        "recall": 0.9491946486387424,
+        "accuracy": 0.9591094559803177
+      },
+      "RH": {
+        "f1": 0.9463330044548091,
+        "precision": 0.9463801626534843,
+        "recall": 0.9462858509556933,
+        "accuracy": 0.9638014828956125
+      },
+      "LH": {
+        "f1": 0.957189923059313,
+        "precision": 0.9565139549225169,
+        "recall": 0.9578668472847524,
+        "accuracy": 0.9710882410276749
+      }
+    }
+  },
+  "test_stride10": {
+    "f1": 0.9488341694413572,
+    "precision": 0.945455650268564,
+    "recall": 0.9522998035295894,
+    "accuracy": 0.9655676547691067,
+    "exact": 0.8974927740807959,
+    "per_leg": {
+      "RF": {
+        "f1": 0.9525423728813559,
+        "precision": 0.9514041027683728,
+        "recall": 0.9536833699341186,
+        "accuracy": 0.9680043019425959
+      },
+      "LF": {
+        "f1": 0.9385867926424767,
+        "precision": 0.9260214200714002,
+        "recall": 0.9514978601997147,
+        "accuracy": 0.9589298917792566
+      },
+      "RH": {
+        "f1": 0.9463911350703803,
+        "precision": 0.9464856230031949,
+        "recall": 0.9462966660011979,
+        "accuracy": 0.9639040129058278
+      },
+      "LH": {
+        "f1": 0.9578163771712159,
+        "precision": 0.9579114552312885,
+        "recall": 0.9577213179833267,
+        "accuracy": 0.9714324124487463
+      }
+    }
+  },
+  "validation": [
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.1,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9122580006870739
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.1,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9228023095544947
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.1,
+        "estimator__rbfsvmclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9225655496329046
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.1,
+        "estimator__rbfsvmclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.8199055446952983
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.3,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9238722026264953
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.3,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9337838887004046
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.3,
+        "estimator__rbfsvmclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.933389718640901
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 0.3,
+        "estimator__rbfsvmclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.8772306075595291
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 1.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9344303418123356
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 1.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9401448550584074
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 1.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9462214817290602
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 1.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9148860659625402
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 3.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9426401824453146
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 3.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9451487185292887
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 3.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9455655188967541
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 3.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9201908897769667
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 10.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.945139572985264
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 10.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9474506945749621
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 10.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9455937026420933
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 10.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9198320784244849
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 30.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9466588881961084
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 30.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9431747742211675
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 30.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9458445111097228
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 30.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9198320784244849
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 100.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.1
+      },
+      "val_f1": 0.9462973244933037
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 100.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 0.3
+      },
+      "val_f1": 0.9462625131352906
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 100.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 1.0
+      },
+      "val_f1": 0.9461994478163511
+    },
+    {
+      "params": {
+        "estimator__rbfsvmclassifier__C": 100.0,
+        "estimator__rbfsvmclassifier__gamma_scale": 3.0
+      },
+      "val_f1": 0.9198320784244849
+    }
+  ]
+}

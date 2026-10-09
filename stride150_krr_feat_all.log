@@ -1,0 +1,46 @@
+  {'estimator__kernelridgeclassifier__alpha': 0.01, 'estimator__kernelridgeclassifier__gamma_scale': 0.1}  val F1 0.9468
+  {'estimator__kernelridgeclassifier__alpha': 0.01, 'estimator__kernelridgeclassifier__gamma_scale': 0.2}  val F1 0.9471
+  {'estimator__kernelridgeclassifier__alpha': 0.01, 'estimator__kernelridgeclassifier__gamma_scale': 0.3}  val F1 0.9472
+  {'estimator__kernelridgeclassifier__alpha': 0.01, 'estimator__kernelridgeclassifier__gamma_scale': 0.5}  val F1 0.9472
+  {'estimator__kernelridgeclassifier__alpha': 0.01, 'estimator__kernelridgeclassifier__gamma_scale': 1.0}  val F1 0.9459
+  {'estimator__kernelridgeclassifier__alpha': 0.01, 'estimator__kernelridgeclassifier__gamma_scale': 2.0}  val F1 0.9330
+  {'estimator__kernelridgeclassifier__alpha': 0.01, 'estimator__kernelridgeclassifier__gamma_scale': 3.0}  val F1 0.9144
+  {'estimator__kernelridgeclassifier__alpha': 0.03, 'estimator__kernelridgeclassifier__gamma_scale': 0.1}  val F1 0.9466
+  {'estimator__kernelridgeclassifier__alpha': 0.03, 'estimator__kernelridgeclassifier__gamma_scale': 0.2}  val F1 0.9472
+  {'estimator__kernelridgeclassifier__alpha': 0.03, 'estimator__kernelridgeclassifier__gamma_scale': 0.3}  val F1 0.9471
+  {'estimator__kernelridgeclassifier__alpha': 0.03, 'estimator__kernelridgeclassifier__gamma_scale': 0.5}  val F1 0.9473
+  {'estimator__kernelridgeclassifier__alpha': 0.03, 'estimator__kernelridgeclassifier__gamma_scale': 1.0}  val F1 0.9459
+  {'estimator__kernelridgeclassifier__alpha': 0.03, 'estimator__kernelridgeclassifier__gamma_scale': 2.0}  val F1 0.9334
+  {'estimator__kernelridgeclassifier__alpha': 0.03, 'estimator__kernelridgeclassifier__gamma_scale': 3.0}  val F1 0.9145
+  {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 0.1}  val F1 0.9449
+  {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 0.2}  val F1 0.9474
+  {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 0.3}  val F1 0.9470
+  {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 0.5}  val F1 0.9449
+  {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 1.0}  val F1 0.9442
+  {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 2.0}  val F1 0.9342
+  {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 3.0}  val F1 0.9145
+  {'estimator__kernelridgeclassifier__alpha': 0.3, 'estimator__kernelridgeclassifier__gamma_scale': 0.1}  val F1 0.9438
+  {'estimator__kernelridgeclassifier__alpha': 0.3, 'estimator__kernelridgeclassifier__gamma_scale': 0.2}  val F1 0.9464
+  {'estimator__kernelridgeclassifier__alpha': 0.3, 'estimator__kernelridgeclassifier__gamma_scale': 0.3}  val F1 0.9470
+  {'estimator__kernelridgeclassifier__alpha': 0.3, 'estimator__kernelridgeclassifier__gamma_scale': 0.5}  val F1 0.9469
+  {'estimator__kernelridgeclassifier__alpha': 0.3, 'estimator__kernelridgeclassifier__gamma_scale': 1.0}  val F1 0.9458
+  {'estimator__kernelridgeclassifier__alpha': 0.3, 'estimator__kernelridgeclassifier__gamma_scale': 2.0}  val F1 0.9298
+  {'estimator__kernelridgeclassifier__alpha': 0.3, 'estimator__kernelridgeclassifier__gamma_scale': 3.0}  val F1 0.9101
+  {'estimator__kernelridgeclassifier__alpha': 1.0, 'estimator__kernelridgeclassifier__gamma_scale': 0.1}  val F1 0.9363
+  {'estimator__kernelridgeclassifier__alpha': 1.0, 'estimator__kernelridgeclassifier__gamma_scale': 0.2}  val F1 0.9408
+  {'estimator__kernelridgeclassifier__alpha': 1.0, 'estimator__kernelridgeclassifier__gamma_scale': 0.3}  val F1 0.9452
+  {'estimator__kernelridgeclassifier__alpha': 1.0, 'estimator__kernelridgeclassifier__gamma_scale': 0.5}  val F1 0.9459
+  {'estimator__kernelridgeclassifier__alpha': 1.0, 'estimator__kernelridgeclassifier__gamma_scale': 1.0}  val F1 0.9467
+  {'estimator__kernelridgeclassifier__alpha': 1.0, 'estimator__kernelridgeclassifier__gamma_scale': 2.0}  val F1 0.9300
+  {'estimator__kernelridgeclassifier__alpha': 1.0, 'estimator__kernelridgeclassifier__gamma_scale': 3.0}  val F1 0.9049
+best: {'estimator__kernelridgeclassifier__alpha': 0.1, 'estimator__kernelridgeclassifier__gamma_scale': 0.2}  val F1 0.9474
+
+stride150/krr_feat_all — test, every timestep (n=148763)
+            F1    prec  recall     acc
+RF      0.9547  0.9508  0.9587  0.9694
+LF      0.9429  0.9297  0.9566  0.9618
+RH      0.9526  0.9457  0.9596  0.9678
+LH      0.9615  0.9589  0.9642  0.9740
+mean    0.9529  0.9462  0.9598  0.9682
+exact-state accuracy 0.9053
+every 10th timestep: F1 0.9529, exact-state 0.9056
