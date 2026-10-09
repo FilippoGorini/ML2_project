@@ -37,7 +37,7 @@ def report(name, y_test, p_test, validation=()):
     print(f"exact-state accuracy {full['exact']:.4f}")
     print(f"every 10th timestep: F1 {sub['f1']:.4f}, exact-state {sub['exact']:.4f}")
 
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    (RESULTS_DIR / name).parent.mkdir(parents=True, exist_ok=True)
     (RESULTS_DIR / f"{name}.json").write_text(
         json.dumps({"test": full, "test_stride10": sub, "validation": list(validation)}, indent=2))
     np.save(RESULTS_DIR / f"{name}_test_pred.npy", p_test.astype(np.uint8))

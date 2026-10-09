@@ -3,6 +3,8 @@
     python -m src.train majority
     python -m src.train ridge current
     python -m src.train ridge window_log --val-only    # tune and score on validation only, no test
+    python -m src.train ridge feat_all --stride=150    # train/val stride 150 (non-overlapping windows);
+                                                       # saved under stride150/ (default stride 10)
 """
 import json
 import sys
@@ -21,10 +23,12 @@ MODELS_DIR = Path(__file__).resolve().parent.parent / "outputs" / "models"
 CHUNK = 20_000  # test windows predicted at a time (kernel models / wide inputs would not fit otherwise)
 
 
-def main(model_name, input_name="none", val_only=False):
+def main(model_name, input_name="none", val_only=False, stride=10):
     name = model_name if input_name == "none" else f"{model_name}_{input_name}"
+    if stride != 10:
+        name = f"stride{stride}/{name}"
     recs = load_recordings()
-    sp = split(recs)
+    sp = split(recs, stride=stride)
     make_input, (make_model, grid) = INPUTS[input_name], MODELS[model_name]
     n_train = sum(len(e) for e in sp["train"].values())
     X = np.concatenate([make_input(recs, sp["train"]), make_input(recs, sp["val"])])
@@ -47,11 +51,11 @@ def main(model_name, input_name="none", val_only=False):
     print(f"best: {search.best_params_}  val F1 {search.best_score_:.4f}")
 
     if val_only:  # kept apart from outputs/results/*.json, which hold only test-evaluated models
-        (RESULTS_DIR / "validation").mkdir(parents=True, exist_ok=True)
+        (RESULTS_DIR / "validation" / name).parent.mkdir(parents=True, exist_ok=True)
         (RESULTS_DIR / "validation" / f"{name}.json").write_text(json.dumps(validation, indent=2))
         return
 
-    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    (MODELS_DIR / name).parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(search.best_estimator_, MODELS_DIR / f"{name}.joblib")
     X_test = make_input(recs, sp["test"])
     p_test = np.concatenate([search.predict(X_test[i:i + CHUNK]) for i in range(0, len(X_test), CHUNK)])
@@ -60,4 +64,5 @@ def main(model_name, input_name="none", val_only=False):
 
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    main(*args, val_only="--val-only" in sys.argv)
+    stride = [int(a.split("=")[1]) for a in sys.argv if a.startswith("--stride=")]
+    main(*args, val_only="--val-only" in sys.argv, stride=stride[0] if stride else 10)
