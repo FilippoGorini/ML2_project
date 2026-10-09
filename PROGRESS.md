@@ -488,6 +488,24 @@ training windows**, no subsample. One change per step:
 - Foot speeds add ~nothing **given the rest** (std / min / max of `v` carry it). Permutation measures what a group adds
   given all others — correlated groups mask each other.
 
+### Predictions in time (`notebooks/03_predictions.ipynb`)
+Qualitative view: one leg (LF), 1.5 s of a test block (fixed rule: the first 1.5 s; worst cases labelled), raw foot height
+and speed with the true contact shaded, one strip per model (correct / false contact / missed contact). Reads saved
+test predictions only.
+- **Trot**: boosting's probability is an almost clean step; errors are a few ms at touchdown / lift-off. Ridge on the
+  current timestep misses the start of stance and adds spurious contacts; linear/kernel models call lift-off a few ms late.
+- **Pronking**: in stance the foot is neither at a fixed height nor still (p_z moves several cm, ‖v‖ ≈ 0.5–1 m/s) →
+  ridge on the current timestep misses most of every stance; window features fix it. A good picture for "why history".
+- **Galloping**: long blocks where **all models disagree with the label in the same way** (foot at its lowest and slow
+  for ~150 ms but labelled contact for ~40 ms; label "contact" while the foot rises ~6 cm) → part of galloping's low F1 is
+  probably label noise (labels: offline, different cut-off for gallop). Discussion point, not a proof.
+- **Air**: the single tree's false contacts are blocks of tens of ms when the swinging foot passes low and slow; forest
+  and boosting have none.
+- **Where errors happen** (distance to the nearest true transition, ground recordings): boosting 72% within 5 ms,
+  82% within 10 ms (median 2.5 ms; sensor data update every ~2–5 ms) vs ridge on the current timestep 27% (median
+  12.5 ms). Better models push their errors to the transitions (ridge features 59% → kernel ridge 65% → forest 69% →
+  boosting 72%). Boosting errors > 20 ms from a transition: ~1,500 leg-timesteps, 0.25% of all scored.
+
 ## Plan
 
 ### Inputs (each adds one thing)
