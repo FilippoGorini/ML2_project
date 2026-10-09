@@ -390,7 +390,7 @@ Conclusions:
 - **Sparsity**: RBF SVM keeps ~900–1,050 support vectors per leg (~10% of the 10k; half at the bound α = C, i.e.
   inside the margin — mostly touchdown/lift-off) → predictions ~10× cheaper than kernel ridge (relevant at 1 kHz).
 
-### Trees: three steps (planned, not yet run)
+### Trees: three steps
 Trees replace the hyperplane / smooth kernel boundary with **axis-aligned thresholds** ("feature j < t"): a different
 inductive bias, no scaling needed (invariant to monotone transforms of each feature), cost ~n log n → **all 70k
 training windows**, no subsample. One change per step:
@@ -424,6 +424,69 @@ training windows**, no subsample. One change per step:
 - Compared with a colleagues' project (wall-following robot, `DecisionTreeClassifier` tuning `min_samples_leaf`, forest of
   300 tuning `max_features`): same knobs, but they tuned without class weights and retrained with them, used a random
   split + random 3-fold CV, accuracy, and impurity importance — all avoided here.
+
+#### Results (test, every timestep)
+
+| model (feat_all) | train windows | val F1 | test F1 | precision | recall | exact-state | false contact | missed contact |
+|---|---|---|---|---|---|---|---|---|
+| ridge | 70k | 0.951 | 0.946 | 0.938 | 0.955 | 0.899 | 3.2% | 4.6% |
+| linear SVM | 70k | 0.959 | 0.952 | 0.946 | 0.958 | 0.903 | 2.8% | 4.2% |
+| kernel ridge | 10k | 0.963 | 0.956 | 0.951 | 0.960 | 0.909 | 2.5% | 4.0% |
+| decision tree | 70k | 0.951 | 0.940 | 0.938 | 0.942 | 0.876 | 3.2% | 5.9% |
+| random forest | 70k | 0.972 | 0.967 | 0.965 | 0.968 | 0.928 | 1.8% | 3.2% |
+| gradient boosting 10k | 10k | 0.969 | 0.962 | 0.957 | 0.967 | 0.918 | 2.2% | 3.3% |
+| **gradient boosting** | 70k | 0.975 | **0.972** | 0.969 | 0.976 | 0.937 | 1.6% | 2.4% |
+
+- **Gradient boosting is the best model by a wide margin**: +1.6 over kernel ridge, +2.0 over the 70k linear SVM;
+  val agrees (0.975 vs 0.963); val → test gap 0.3, the smallest of all models.
+- **Tree ladder, one change per step: 0.940 → 0.967 → 0.972.** tree → forest **+2.7** (averaging removes most of a single
+  tree's variance — the largest step; the forest alone beats every non-tree model, +1.1 over kernel ridge);
+  forest → boosting **+0.5** (lower bias), on both errors: false contacts 1.8% → 1.6%, missed 3.2% → 2.4%.
+- Per recording: forest > kernel ridge on every ground recording, boosting > forest on every one (pronking by 0.001);
+  galloping 0.868 → 0.893 → 0.914.
+- **Both errors drop by more than a third** vs kernel ridge (false 2.5% → 1.6%, missed 4.0% → 2.4%); exact-state 0.937.
+- **Best on every ground recording**, most on the hard ones: galloping 0.868 → 0.914, old asphalt 0.929 → 0.944,
+  pronking 0.971 → 0.986. No false contacts in the air recordings.
+- **One tree is not enough**: 0.940 < ridge 0.946. Ties ridge on val (0.951) but loses 1.1 on test → high variance.
+  Most missed contacts (5.9%), only model with clear false contacts in the air (4.4% on air_walking_gait).
+  Leaf size: 1 → 0.944 (memorises near-duplicates), 20–50 flat top 0.951, 200 → 0.940; chosen 50 (depth 28–33,
+  ~230 leaves per leg).
+- **Boosting hyperparameters**: whole grid 0.969–0.975 (even 100 trees × 15 leaves beats every other model on val);
+  chosen 800 trees × 63 leaves (0.9750) — on the upper edge of `max_iter`, but each doubling adds less (+0.14, +0.05,
+  +0.04 points at 63 leaves); 127 leaves no better. **Edge check** (val only, one train-only fit scored after every tree up to 3,200,
+  scratch script): 0.9754 at 1,200 trees, then flat 0.9753 (127 leaves: flat 0.9748) → +0.04 at most, 800 stays.
+- **Random forest hyperparameters**: smallest leaves best (`min_samples_leaf` = 1 at every `max_features`) — the opposite
+  of the single tree (1 → 0.944 < 0.951): each deep tree memorises, averaging 200 cancels it. `max_features` barely
+  matters (0.9709–0.9715); chosen 39 of 390 per split. Trees ~38 deep, ~990–1,140 leaves; 135 MB for 800 trees.
+- **Depth-3 tree for RF (picture only)**: the root splits on the **LF** foot height above its window minimum (≤ 1.9 cm →
+  RF in air 90%): the opposite trot pair — the tree finds the leg coupling by itself. 7 questions ≈ 94% of RF training
+  windows right (majority 66%).
+- **Equal data (`gb_10k`: same boosting and grid on the kernel methods' 10k windows)**: boosting vs kernel ridge changes
+  boundary, loss (log-loss) and data (70k vs 10k); at equal data boosting still wins, **0.962 vs 0.956** (+0.6, val
+  0.969 vs 0.963), fewer false (2.2% vs 2.5%) and missed (3.3% vs 4.0%) contacts, better or level on every ground
+  recording except grass (0.947 vs 0.949). → of boosting's +1.6 over kernel ridge, **~0.6 is the model, ~1.0 the 7×
+  more windows** kernel ridge cannot use (memory). 10k → 70k: boosting +1.0, like the linear SVM (ridge +0.4).
+  `gb_10k` best 400 trees × 31 leaves (inside the grid, 0.965–0.969): on 10k, bigger trees no longer help.
+
+**Grouped permutation importance** (F1 drop, every 10th test timestep, 3 shuffles; ridge for reference):
+
+| group | ridge | tree | forest | boosting |
+|---|---|---|---|---|
+| channel `p` (foot positions) | 0.40 | 0.36 | 0.14 | 0.18 |
+| channel `v` (foot velocities) | 0.34 | 0.16 | 0.06 | 0.09 |
+| channel `q` / `qd` | 0.31 / 0.23 | 0.03 / 0.11 | 0.010 / 0.022 | 0.006 / 0.008 |
+| channel `acc` / `omega` | 0.017 / 0.006 | 0.07 / 0.004 | 0.012 / 0.001 | 0.004 / 0.001 |
+| type: current value | 0.23 | 0.12 | 0.044 | 0.044 |
+| type: change 50 ms | 0.11 | 0.23 | 0.047 | 0.031 |
+| type: foot height − min | 0.32 | 0.16 | 0.006 | 0.014 |
+| type: min / max | 0.20 / 0.19 | 0.05 / 0.07 | 0.007 / 0.006 | 0.004 / 0.007 |
+| type: foot speeds | ≤ 0.016 | ≤ 0.002 | ≤ 0.001 | ≤ 0.001 |
+
+- **Foot positions, then foot velocities** matter most for every model; `omega` hardly at all.
+- **The ensembles are far more robust**: no single feature type costs the forest or boosting more than 4.7 points; ridge
+  loses 19–32 to several types, the tree 23 to the 50 ms change. Many trees spread over many correlated features, which stand in for each other.
+- Foot speeds add ~nothing **given the rest** (std / min / max of `v` carry it). Permutation measures what a group adds
+  given all others — correlated groups mask each other.
 
 ## Plan
 
@@ -492,7 +555,15 @@ not automatically better: huge variance and wild extrapolation; RBF kernels are 
 2. ✅ Ridge on A → B → C (input ladder): 0.840 → 0.930 → 0.946.
 3. ✅ Kernel ridge on the best input (non-linear boundary): 0.956.
 4. ✅ Linear SVM and RBF SVM on the same input (loss) → 2×2 with ridge / kernel ridge: boundary matters, loss only with full data.
-5. Trees on the same input, 70k windows: decision tree → random forest → gradient boosting, with feature importance.
+5. ✅ Trees on the same input, 70k windows: decision tree → random forest → gradient boosting, with feature importance.
+   Tree 0.940 → random forest 0.967 → gradient boosting **0.972 (best)**; `gb_10k` 0.962 > kernel ridge 0.956 at equal data.
+
+### Weak spots to check (questions the professor could ask)
+- **Random forest: is 200 trees enough?** `n_estimators` was fixed, not tuned (more trees only lower the variance, never
+  hurt). Unchecked. Check (val only): fit ~800 trees per leg on train, score val with the first 25/50/…/800 trees
+  (forest prediction = average over trees → one fit gives the whole curve); expect a plateau by ~100–200.
+- **Real-time cost of gradient boosting**: 800 trees × 4 legs per timestep at 1 kHz (1 ms budget). Not measured.
+  Check: time single-window and batch predictions of the saved models (`gb`, `rf`, `krr`, `svm_rbf`) on the test features.
 
 ### Appendix candidates
 LASSO on the raw window (which lags matter); MLP; stride 1 vs 150 rerun; random-split comparison

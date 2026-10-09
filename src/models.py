@@ -127,4 +127,10 @@ MODELS = {
     "gb": (lambda: MultiOutputClassifier(HistGradientBoostingClassifier(early_stopping=False, random_state=0)),
            {"estimator__max_iter": [100, 200, 400, 800],
             "estimator__max_leaf_nodes": [15, 31, 63, 127]}),
+
+    # the same boosting on the kernel methods' 10k windows: comparison with kernel ridge at equal training data
+    "gb_10k": (lambda: Subsampled(MultiOutputClassifier(HistGradientBoostingClassifier(early_stopping=False,
+                                                                                         random_state=0))),
+               {"estimator__estimator__max_iter": [100, 200, 400, 800],
+                "estimator__estimator__max_leaf_nodes": [15, 31, 63, 127]}),
 }

@@ -1,0 +1,24 @@
+leaves 63, leg 0 done
+leaves 63, leg 1 done
+leaves 63, leg 2 done
+leaves 63, leg 3 done
+leaves  63  trees  100  val F1 0.9727
+leaves  63  trees  200  val F1 0.9741
+leaves  63  trees  400  val F1 0.9746
+leaves  63  trees  800  val F1 0.9750
+leaves  63  trees 1200  val F1 0.9754
+leaves  63  trees 1600  val F1 0.9753
+leaves  63  trees 2400  val F1 0.9753
+leaves  63  trees 3200  val F1 0.9753
+leaves 127, leg 0 done
+leaves 127, leg 1 done
+leaves 127, leg 2 done
+leaves 127, leg 3 done
+leaves 127  trees  100  val F1 0.9731
+leaves 127  trees  200  val F1 0.9742
+leaves 127  trees  400  val F1 0.9746
+leaves 127  trees  800  val F1 0.9747
+leaves 127  trees 1200  val F1 0.9748
+leaves 127  trees 1600  val F1 0.9748
+leaves 127  trees 2400  val F1 0.9748
+leaves 127  trees 3200  val F1 0.9748

@@ -1,0 +1,20 @@
+  {'estimator__max_features': 'sqrt', 'estimator__min_samples_leaf': 1}  val F1 0.9711
+  {'estimator__max_features': 'sqrt', 'estimator__min_samples_leaf': 5}  val F1 0.9703
+  {'estimator__max_features': 'sqrt', 'estimator__min_samples_leaf': 20}  val F1 0.9680
+  {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 1}  val F1 0.9715
+  {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 5}  val F1 0.9707
+  {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 20}  val F1 0.9682
+  {'estimator__max_features': 0.2, 'estimator__min_samples_leaf': 1}  val F1 0.9709
+  {'estimator__max_features': 0.2, 'estimator__min_samples_leaf': 5}  val F1 0.9701
+  {'estimator__max_features': 0.2, 'estimator__min_samples_leaf': 20}  val F1 0.9685
+best: {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 1}  val F1 0.9715
+
+rf_feat_all — test, every timestep (n=148763)
+            F1    prec  recall     acc
+RF      0.9669  0.9654  0.9684  0.9777
+LF      0.9594  0.9546  0.9641  0.9730
+RH      0.9678  0.9665  0.9690  0.9782
+LH      0.9730  0.9737  0.9723  0.9818
+mean    0.9668  0.9651  0.9685  0.9777
+exact-state accuracy 0.9278
+every 10th timestep: F1 0.9669, exact-state 0.9290

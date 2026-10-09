@@ -1,0 +1,29 @@
+/home/filippo/ML2_project/.venv/lib/python3.10/site-packages/joblib/externals/loky/process_executor.py:787: UserWarning: A worker stopped while some jobs were given to the executor. This can be caused by a too short worker timeout or by a memory leak.
+  warnings.warn(
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 15}  val F1 0.9694
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 31}  val F1 0.9714
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 63}  val F1 0.9727
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 127}  val F1 0.9731
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 15}  val F1 0.9716
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 31}  val F1 0.9729
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 63}  val F1 0.9741
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 127}  val F1 0.9742
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 15}  val F1 0.9732
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 31}  val F1 0.9739
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 63}  val F1 0.9746
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 127}  val F1 0.9746
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 15}  val F1 0.9740
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 31}  val F1 0.9745
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 63}  val F1 0.9750
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 127}  val F1 0.9747
+best: {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 63}  val F1 0.9750
+
+gb_feat_all — test, every timestep (n=148763)
+            F1    prec  recall     acc
+RF      0.9702  0.9666  0.9738  0.9799
+LF      0.9668  0.9616  0.9720  0.9779
+RH      0.9742  0.9719  0.9765  0.9825
+LH      0.9769  0.9738  0.9799  0.9843
+mean    0.9720  0.9685  0.9756  0.9812
+exact-state accuracy 0.9368
+every 10th timestep: F1 0.9728, exact-state 0.9388
