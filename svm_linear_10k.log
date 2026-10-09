@@ -1,0 +1,18 @@
+  {'estimator__multioutputclassifier__estimator__C': 0.001}  val F1 0.9445
+  {'estimator__multioutputclassifier__estimator__C': 0.003}  val F1 0.9486
+  {'estimator__multioutputclassifier__estimator__C': 0.01}  val F1 0.9521
+  {'estimator__multioutputclassifier__estimator__C': 0.03}  val F1 0.9526
+  {'estimator__multioutputclassifier__estimator__C': 0.1}  val F1 0.9529
+  {'estimator__multioutputclassifier__estimator__C': 0.3}  val F1 0.9525
+  {'estimator__multioutputclassifier__estimator__C': 1.0}  val F1 0.9507
+best: {'estimator__multioutputclassifier__estimator__C': 0.1}  val F1 0.9529
+
+svm_linear_10k_feat_all — test, every timestep (n=148763)
+            F1    prec  recall     acc
+RF      0.9432  0.9347  0.9518  0.9614
+LF      0.9319  0.9178  0.9464  0.9543
+RH      0.9415  0.9368  0.9463  0.9603
+LH      0.9509  0.9459  0.9559  0.9667
+mean    0.9418  0.9338  0.9501  0.9607
+exact-state accuracy 0.8828
+every 10th timestep: F1 0.9426, exact-state 0.8845

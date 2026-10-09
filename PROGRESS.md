@@ -340,9 +340,59 @@ prediction** (= the intercept ridge has; without it the 32/68 offset would have 
 - Large γ (s ≥ 2) clearly worse at every α: kernel too local for 10k windows in 390-D. α and γ interact → searched together.
 - Notebook: `VAL_PLOT_3D` at the top switches the validation plot between a 2-D heatmap and a 3-D surface.
 
+### SVMs: boundary × loss
+Every model computes a score f(x) per leg, contact if f(x) > 0. Two independent choices:
+- **boundary**: hyperplane (ridge, linear SVM) or RBF kernel (kernel ridge, RBF SVM);
+- **loss** (margin m = y·f(x)): **squared** (1 − m)² pulls every window to ±1 (also penalizes "too correct" ones);
+  **hinge** max(0, 1 − m) is zero beyond the margin → only windows near the boundary (support vectors) matter.
+  SVM objective ½‖w‖² + C·Σ hinge: C weighs the loss → opposite role of α (roughly C ≈ 1/(2α)).
+
+Models (all on `feat_all`, standardized, one binary SVM per leg, no class weights, same selection/refit/test):
+- `svm_linear`: `LinearSVC(loss="hinge")`, 70k windows (like ridge), C ∈ {0.001 … 1}.
+- `svm_linear_10k`: the same on the 10k kernel windows (hinge counterpart of `ridge_10k`).
+- `svm_rbf`: `SVC(kernel="rbf")`, the same 10k windows as kernel ridge, γ = s/390,
+  C ∈ {0.1 … 100} × s ∈ {0.1, 0.3, 1, 3}.
+Run on the lab workstation (`max_iter` = 1M for the linear SVM: large C converges slowly — the final 70k fits
+needed 139k–264k iterations, all converged; total ~5 h, the RBF SVM ~15 min).
+
+**2 × 2 on identical data (10k windows), test F1:**
+
+| | squared loss | hinge loss | effect of the loss |
+|---|---|---|---|
+| hyperplane | ridge_10k 0.942 | svm_linear_10k 0.942 | 0.000 |
+| RBF kernel | **kernel ridge 0.956** | RBF SVM 0.953 | −0.003 |
+| effect of the boundary | +0.014 | +0.011 | |
+
+**All model-ladder models:**
+
+| model (feat_all) | train windows | val F1 | test F1 | precision | recall | exact-state | false contact | missed contact |
+|---|---|---|---|---|---|---|---|---|
+| ridge | 70k | 0.951 | 0.946 | 0.938 | 0.955 | 0.899 | 3.2% | 4.6% |
+| linear SVM | 70k | 0.959 | 0.952 | 0.946 | 0.958 | 0.903 | 2.8% | 4.2% |
+| ridge_10k | 10k | 0.951 | 0.942 | 0.936 | 0.949 | 0.891 | 3.3% | 5.1% |
+| linear SVM 10k | 10k | 0.953 | 0.942 | 0.934 | 0.950 | 0.883 | 3.4% | 5.0% |
+| **kernel ridge** | 10k | 0.963 | **0.956** | 0.951 | 0.960 | 0.909 | 2.5% | 4.0% |
+| RBF SVM | 10k | 0.962 | 0.953 | 0.947 | 0.959 | 0.903 | 2.7% | 4.1% |
+
+Conclusions:
+- **The boundary matters, the loss does not (on identical data)**: hyperplane → RBF +1.1 to +1.4; squared ↔ hinge
+  0.0 to 0.3. The EMG project's conclusion, here on a fully controlled 2 × 2.
+- **But with all the data the hinge wins for the hyperplane**: linear SVM 70k 0.952 vs ridge 0.946. 10k → 70k gives
+  the SVM +1.0, ridge only +0.4: the hinge is decided by the hard windows near the boundary (touchdown/lift-off),
+  and 7× more data means 7× more of them; the squared loss is dominated by the easy bulk.
+- **Best model: kernel ridge (0.956)** — lowest false-contact rate (2.5%), best LF (0.950). The 70k linear SVM comes
+  within 0.4 points (level with the RBF SVM): the kernel models are capped at 10k by memory, so part of their
+  advantage depends on that limit.
+- **Per recording**: kernel models better on non-trot gaits (galloping 0.868 vs 0.846, pronking) and concrete; the 70k
+  linear SVM slightly better on outdoor trot terrains (grass, forest, rock road, small pebble).
+- **RBF SVM hyperparameters**: best C = 10, s = 0.3 (same s as kernel ridge), inside the grid; diagonal band again,
+  flat top (0.960–0.962), s = 3 bad. C ≈ 1/(2α) with kernel ridge's α = 0.03 → C ≈ 17 ≈ chosen 10.
+- **Sparsity**: RBF SVM keeps ~900–1,050 support vectors per leg (~10% of the 10k; half at the bound α = C, i.e.
+  inside the margin — mostly touchdown/lift-off) → predictions ~10× cheaper than kernel ridge (relevant at 1 kHz).
+
 ### Next
-SVM: linear (hinge loss vs ridge's squared loss, same boundary) and RBF (hinge vs kernel ridge, same 10k
-windows) → the EMG-style 2×2 of boundary × loss.
+Trees: gradient boosting (and/or random forest) on `feat_all`, full 70k windows — a different inductive bias
+(axis-aligned splits), with feature importance.
 
 ## Plan
 
@@ -410,7 +460,7 @@ not automatically better: huge variance and wild extrapolation; RBF kernels are 
 1. ✅ Majority baseline.
 2. ✅ Ridge on A → B → C (input ladder): 0.840 → 0.930 → 0.946.
 3. ✅ Kernel ridge on the best input (non-linear boundary): 0.956.
-4. Linear SVM (+ RBF SVM if time) on the same input (loss) → 2×2 with ridge / kernel ridge.
+4. ✅ Linear SVM and RBF SVM on the same input (loss) → 2×2 with ridge / kernel ridge: boundary matters, loss only with full data.
 5. Gradient boosting or random forest on the same input, with feature importance.
 
 ### Appendix candidates
