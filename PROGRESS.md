@@ -390,9 +390,40 @@ Conclusions:
 - **Sparsity**: RBF SVM keeps ~900–1,050 support vectors per leg (~10% of the 10k; half at the bound α = C, i.e.
   inside the margin — mostly touchdown/lift-off) → predictions ~10× cheaper than kernel ridge (relevant at 1 kHz).
 
-### Next
-Trees: gradient boosting (and/or random forest) on `feat_all`, full 70k windows — a different inductive bias
-(axis-aligned splits), with feature importance.
+### Trees: three steps (planned, not yet run)
+Trees replace the hyperplane / smooth kernel boundary with **axis-aligned thresholds** ("feature j < t"): a different
+inductive bias, no scaling needed (invariant to monotone transforms of each feature), cost ~n log n → **all 70k
+training windows**, no subsample. One change per step:
+
+| step | model (`src/models.py`) | what changes | tuned on validation |
+|---|---|---|---|
+| 1 | `tree`: one decision tree per leg | thresholds instead of hyperplane / kernel | `min_samples_leaf` ∈ {1, 5, 20, 50, 100, 200} |
+| 2 | `rf`: random forest, 200 trees | average many decorrelated deep trees → **lower variance** | `max_features` ∈ {√390 ≈ 20, 39, 78} × `min_samples_leaf` ∈ {1, 5, 20} |
+| 3 | `gb`: gradient boosting (`HistGradientBoosting`) | add small trees one by one on the log-loss gradient → **lower bias** | `max_iter` ∈ {100…800} × `max_leaf_nodes` ∈ {15…127}, learning rate fixed 0.1 |
+
+- **Tree**: greedy splits on one feature at a time, each leaf predicts its majority label. High variance: on near-duplicate
+  windows a deep tree memorises → leaf size is the only knob. Its value: the tree → forest gap measures how much variance
+  costs, and a depth-3 tree (fitted only for the picture) shows the learned thresholds.
+- **Random forest**: bootstrap samples + random feature subset per split decorrelate the trees; averaging lowers variance
+  without raising bias. More trees never hurt → `n_estimators` fixed, not tuned. The out-of-bag score is **not** used:
+  left-out windows have near-identical neighbours in the bootstrap → optimistic (same reason as no random k-fold).
+- **Gradient boosting**: F(x) = Σ shrunk small trees, each fitted to what the ensemble still gets wrong. Learning rate and
+  number of trees trade off → rate fixed, trees tuned. Features binned into 255 quantile bins (fast at 70k × 390).
+  Its loss is the log-loss, so vs the SVMs both boundary and loss change (the 2 × 2 showed the loss barely matters).
+  `early_stopping=False`: sklearn's default (on above 10k samples) holds out a random 10% of near-duplicate training
+  windows and would fit the final model on 90% only.
+- **Comparable with the other models**: same `feat_all`, same 70,476 / 14,882 windows and fixed val fold, F1 macro,
+  refit on train+val, test every timestep; 4 independent per-leg problems (`MultiOutputClassifier` — a multi-output
+  forest would share splits across legs); no class weights; p > 0.5 ⇔ score > 0; `random_state=0`.
+- **Feature importance**: grouped permutation importance on the final models (shuffle a whole group, measure the F1 drop;
+  by feature type and by channel), on every 10th test timestep — post-hoc, no choice depends on it. Not the forest's
+  impurity importance: biased toward many-valued features and split among correlated ones (`feat_all` is full of them).
+- **Expected**: boosting best (0.949 on the 54 current values alone in Phase 2, vs ridge 0.833; uses all 70k windows),
+  forest slightly below, single tree clearly below. Trees predict a constant outside the training range → may be weaker
+  on rare extreme gaits (galloping).
+- Compared with a colleagues' project (wall-following robot, `DecisionTreeClassifier` tuning `min_samples_leaf`, forest of
+  300 tuning `max_features`): same knobs, but they tuned without class weights and retrained with them, used a random
+  split + random 3-fold CV, accuracy, and impurity importance — all avoided here.
 
 ## Plan
 
@@ -405,7 +436,7 @@ Trees: gradient boosting (and/or random forest) on `feat_all`, full 70k windows 
 
 ### Two axes, one change at a time
 1. **Input ladder**, model fixed (ridge): A → B → C.
-2. **Model ladder**, input fixed (best of A/B/C): ridge → kernel ridge (boundary) → SVM (loss) → trees.
+2. **Model ladder**, input fixed (best of A/B/C): ridge → kernel ridge (boundary) → SVM (loss) → trees (tree → forest → boosting).
 
 ### Course models: tier list for this project
 ✓✓ very useful · ✓ useful · ~ possible but limited · ✗ not sensible. Sections refer to `Lessons/ML2_Topics_Index.md`.
@@ -420,7 +451,7 @@ Trees: gradient boosting (and/or random forest) on `feat_all`, full 70k windows 
 | **B** | Linear SVM (§7) | ✓ | ✓ | ✓ | isolates the loss (ridge vs hinge, same boundary); one controlled comparison |
 | **B** | LASSO / L1-SVM (§3, §7) | ~ | ✓✓ | ✓ | on raw windows the zero weights show which lags/channels matter; interpretation more than score |
 | **B−** | MLP (§10) | ✓ | ✓ | ✓✓ | "φ fixed (kernel) vs φ learned"; optional (DL not mandatory); 0.930 on features in the old runs |
-| **C** | Decision tree (§8) | ✓ | ✗ | ✓ | high variance; useful only as a picture (depth-3 tree = learned thresholds) |
+| **C** | Decision tree (§8) | ✓ | ✗ | ✓ | high variance; first rung of the tree ladder (tree → forest = cost of variance) and a picture (depth-3 tree = learned thresholds) |
 | **C** | Bayesian linear regression (§9) | ✓ | ✓ | ✓ | same predictions as ridge (MAP); its predictive variance is interesting for the EKF — a remark, not a model |
 | **D** | 1D CNN / Transformer (§12–13) | ✗ | ✓ | ✗ | raw windows only; appendix curiosity; lost to features + MLP in the old runs |
 | **D** | Perceptron (§10) | ~ | ~ | ~ | historical; ridge does linear classification better |
@@ -461,7 +492,7 @@ not automatically better: huge variance and wild extrapolation; RBF kernels are 
 2. ✅ Ridge on A → B → C (input ladder): 0.840 → 0.930 → 0.946.
 3. ✅ Kernel ridge on the best input (non-linear boundary): 0.956.
 4. ✅ Linear SVM and RBF SVM on the same input (loss) → 2×2 with ridge / kernel ridge: boundary matters, loss only with full data.
-5. Gradient boosting or random forest on the same input, with feature importance.
+5. Trees on the same input, 70k windows: decision tree → random forest → gradient boosting, with feature importance.
 
 ### Appendix candidates
 LASSO on the raw window (which lags matter); MLP; stride 1 vs 150 rerun; random-split comparison

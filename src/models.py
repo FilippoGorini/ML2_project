@@ -5,12 +5,14 @@ All models predict the 4 legs at once (4 independent binary outputs).
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import RidgeClassifier
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC, LinearSVC
+from sklearn.tree import DecisionTreeClassifier
 
 N_KERNEL = 10_000  # training windows for kernel methods (an n x n kernel matrix: 70k windows would need 40 GB)
 
@@ -106,4 +108,23 @@ MODELS = {
     "svm_rbf": (lambda: Subsampled(make_pipeline(StandardScaler(), RBFSVMClassifier())),
                 {"estimator__rbfsvmclassifier__C": [0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0],
                  "estimator__rbfsvmclassifier__gamma_scale": [0.1, 0.3, 1.0, 3.0]}),
+
+    # trees: axis-aligned splits, no scaling needed (invariant to monotone transforms); full 70k windows.
+    # Ladder: one tree -> random forest (lower variance) -> gradient boosting (lower bias).
+    # decision tree: greedy threshold splits on one feature at a time, one tree per leg; leaf size limits memorising
+    "tree": (lambda: MultiOutputClassifier(DecisionTreeClassifier(random_state=0), n_jobs=4),  # a tree uses 1 core
+             {"estimator__min_samples_leaf": [1, 5, 20, 50, 100, 200]}),
+
+    # random forest: deep trees on bootstrap samples, a random subset of features at each split, averaged votes;
+    # more trees only lower the variance (not tuned). Per leg, like the SVMs (a multi-output forest would share splits)
+    "rf": (lambda: MultiOutputClassifier(RandomForestClassifier(n_estimators=200, n_jobs=-1, random_state=0)),
+           {"estimator__max_features": ["sqrt", 0.1, 0.2],     # 20, 39, 78 of the 390 features per split
+            "estimator__min_samples_leaf": [1, 5, 20]}),
+
+    # gradient boosting: trees added one at a time, each fitting the log-loss gradient of the current ensemble;
+    # learning rate fixed (0.1), number of trees and tree size tuned. early_stopping=False: the default holds out
+    # a random 10% of training windows (near-duplicates of the rest) and would train the final model on 90% only
+    "gb": (lambda: MultiOutputClassifier(HistGradientBoostingClassifier(early_stopping=False, random_state=0)),
+           {"estimator__max_iter": [100, 200, 400, 800],
+            "estimator__max_leaf_nodes": [15, 31, 63, 127]}),
 }
