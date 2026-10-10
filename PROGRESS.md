@@ -529,14 +529,75 @@ At stride 150 every model sees the same 5.7k windows (`_10k` references identica
 - Less data → validation picks stronger regularization (ridge α 0.1 → 10, linear SVM C 0.3 → 0.01, kernel ridge
   α 0.03 → 0.1 and smoother γ, boosting 800 → 400 trees); the single tree goes from leaf size 50 to 1.
 
-### Unseen recordings — protocol B (`--protocol-b`, results in `protocol_b/`; planned)
+### Unseen recordings — protocol B (`--protocol-b`, results in `protocol_b/`)
 The papers' split (Ordonez-Apraez et al. RSS 2023; MI-HGNN, MS-HGNN): test = all of `air_jumping_gait`,
 `concrete_pronking`, `concrete_right_circle`, `forest`, `small_pebble`; the other 10 recordings → first 85% train, gap,
 last 15% val (`split_b` in `src/data.py`). Windows: train / val / test = 53,686 / 9,330 / 375,162 at stride 10;
 3,583 / 625 / 375,162 at stride 150. Everything else as protocol A (grids, refit on train+val, test every timestep).
 Differences from the papers to state when comparing: we refit on train+val (they train on train only), we drop the last
 300 ms of each recording (label artefact) and score windows from timestep 150 on.
-Plan: stride 150 first (fast), stride 10 later.
+
+**Stride 150 results** (compared with protocol A at stride 150, so only the split changes; test sets differ):
+
+| test F1 | ridge current | ridge window | ridge features | linear SVM | kernel ridge | RBF SVM | tree | forest | boosting |
+|---|---|---|---|---|---|---|---|---|---|
+| A (seen), stride 150 | 0.837 | 0.921 | 0.942 | 0.939 | 0.953 | 0.949 | 0.898 | 0.952 | 0.958 |
+| B (unseen), stride 150 | 0.676 | 0.861 | 0.912 | 0.888 | **0.926** | 0.850 | 0.837 | 0.896 | 0.903 |
+| B without pronking | 0.914 | 0.927 | 0.945 | 0.949 | 0.955 | 0.941 | 0.897 | 0.958 | **0.959** |
+| B pronking only | 0.206 | 0.743 | 0.862 | 0.793 | **0.884** | 0.705 | 0.742 | 0.798 | 0.813 |
+
+- Every model loses (−2.7 kernel ridge … −16.2 ridge current); **kernel ridge becomes best**, boosting third.
+- **The drop is the unseen gait**: `concrete_pronking` is the only pronking recording → under B the gait is never trained
+  on, and it holds 42% of test contacts. Without it, unseen recordings score at protocol A level and the A ranking
+  returns: **a new terrain with a known gait costs ~nothing**; a new gait costs a lot.
+- On the unseen gait, squared-loss models fitted to all windows generalize best (kernel ridge 0.884, ridge 0.862);
+  trees (constant outside their training region) and the RBF SVM (C = 100 chosen) worst.
+- Errors are **missed** contacts: precision 0.95–0.96, recall 0.84–0.90, false contacts 1.9–2.7% for the main models →
+  on an unknown gait the model fails on the safe side for the EKF.
+- Validation (seen recordings) scores 0.93–0.96 and picks boosting; the test winner is kernel ridge → selecting for
+  unseen gaits would need validation on held-out recordings.
+
+**Stride 10 results** (compared with the main protocol A results; train / val / refit 53,686 / 9,330 / 63,016 windows):
+
+| test F1 | ridge features | linear SVM | kernel ridge | RBF SVM | tree | forest | boosting 10k | boosting |
+|---|---|---|---|---|---|---|---|---|
+| A (seen) | 0.946 | 0.952 | 0.956 | 0.953 | 0.940 | 0.967 | 0.962 | **0.972** |
+| B (unseen) | 0.921 | 0.920 | 0.931 | 0.926 | 0.856 | 0.935 | 0.932 | **0.938** |
+| B without pronking | 0.950 | 0.956 | 0.956 | 0.958 | 0.905 | 0.966 | 0.965 | **0.970** |
+| B pronking only | 0.880 | 0.865 | **0.899** | 0.879 | 0.775 | 0.887 | 0.882 | 0.889 |
+
+- Boosting best on unseen recordings (0.938); drop vs A −2.4 (kernel ridge, ridge) to −3.4 (boosting). Without
+  pronking, every model is at its protocol A level → the drop is again the unseen gait.
+- Kernel ridge still best on pronking, but more windows of the known gaits close the gap (stride 150 → 10, pronking:
+  boosting 0.813 → 0.889, forest 0.798 → 0.887; RBF SVM overall 0.850 → 0.926) → the stride-150 "kernel ridge
+  generalizes best" was largely data scarcity.
+- Equal data (10k): boosting 0.932 = kernel ridge 0.931 → under B, boosting's lead is the extra data it can use.
+- Errors mostly missed contacts (boosting/forest precision 0.97, false contacts 1.5%); kernel ridge the exception
+  (false contacts 3.8%, recall 0.930).
+- Validation agrees with test at the top again (boosting > forest).
+
+**Published numbers on the same split** (MS-HGNN paper, arXiv 2412.01297, Table 2: mean ± std over 4 runs; deep nets on
+the raw 150 × 54 window, ~635k train+val windows at stride 1, trained on train with early stopping on val):
+
+| model | legs-avg F1 | 16-state accuracy |
+|---|---|---|
+| CNN (Lin et al. 2021) | 0.861 ± 0.004 | 0.731 ± 0.013 |
+| CNN-Aug (C2) | 0.873 ± 0.007 | 0.778 ± 0.019 |
+| ECNN (C2, Ordonez-Apraez et al. 2023) | 0.871 ± 0.011 | 0.788 ± 0.029 |
+| MI-HGNN (S4, Butterfield et al. 2024) | 0.931 ± 0.005 | 0.870 ± 0.010 |
+| MS-HGNN (K4) | **0.939 ± 0.006** | **0.875 ± 0.012** |
+| *ours, stride 10 (63k refit windows):* gradient boosting | **0.938** | **0.888** |
+| *ours, stride 10:* random forest | 0.935 | **0.890** |
+| *ours, stride 10:* kernel ridge | 0.931 | 0.853 |
+| *ours, stride 150 (4.2k refit windows):* kernel ridge | 0.926 | 0.860 |
+
+- Same metrics as ours (legs-avg F1 = our macro per-leg F1; 16-state accuracy = our exact-state accuracy).
+- **Gradient boosting on hand-crafted features is level with the best published model** (0.938 vs MS-HGNN
+  0.939 ± 0.006), above MI-HGNN; on 16-state accuracy boosting and the forest are above both. +7.7 over the dataset
+  paper's CNN — with ~10× fewer training windows (63k vs 635k) and no neural network.
+- Even at stride 150 (~150× fewer windows) kernel ridge is within 0.5 points of MI-HGNN. (Old iteration: 0.928.)
+- Not a perfectly matched comparison: we drop the last 300 ms of each recording (label artefact), refit on train+val,
+  report one deterministic run (theirs: mean of 4 seeds); their CNN/ECNN predict the 16 states jointly.
 
 ## Plan
 
@@ -609,11 +670,31 @@ not automatically better: huge variance and wild extrapolation; RBF kernels are 
    Tree 0.940 → random forest 0.967 → gradient boosting **0.972 (best)**; `gb_10k` 0.962 > kernel ridge 0.956 at equal data.
 
 ### Weak spots to check (questions the professor could ask)
+- **Input chosen with ridge, then used for every model.** Not leakage (all choices on validation, test untouched; the
+  val → test gap of ridge on features is only 0.5), but possibly not the best input for the other models — fixed on
+  purpose so the model ladder changes one thing at a time; features chosen for a linear model, if anything, favour it.
+  Check (val only): gradient boosting on the raw window (`gb window_log --val-only`) vs `feat_all` (val 0.9750).
+  Exploration was not fully test-blind (whole recordings for class balance, label artefact, autocorrelation), but the
+  scatter that motivated the foot-speed features used training windows only.
 - **Random forest: is 200 trees enough?** `n_estimators` was fixed, not tuned (more trees only lower the variance, never
   hurt). Unchecked. Check (val only): fit ~800 trees per leg on train, score val with the first 25/50/…/800 trees
   (forest prediction = average over trees → one fit gives the whole curve); expect a plateau by ~100–200.
-- **Real-time cost of gradient boosting**: 800 trees × 4 legs per timestep at 1 kHz (1 ms budget). Not measured.
-  Check: time single-window and batch predictions of the saved models (`gb`, `rf`, `krr`, `svm_rbf`) on the test features.
+- **Real-time cost** (1 kHz → 1 ms budget). Measured on the laptop (Ryzen 7 7840HS), one core, saved protocol A models,
+  sklearn as is (scratch timing, not in the repo):
+
+  | per timestep, 4 legs | one call, 1 window | compute per window (batch of 2,000) | model file |
+  |---|---|---|---|
+  | features (390) | 0.55 ms | 0.02 ms | – |
+  | gradient boosting (3,200 trees, ~59 leaves) | 15 ms | 0.58 ms | 25 MB |
+  | random forest (800 trees, ~1,000 leaves) | 14 ms | 0.05 ms | 135 MB |
+  | kernel ridge (10k training windows) | 4 ms | 0.15 ms | 32 MB |
+  | RBF SVM (~1k support vectors per leg) | 0.8 ms | 0.46 ms | 12 MB |
+
+  → **not real-time as deployed in Python**: one prediction call costs 14–15 ms for the tree ensembles, almost all
+  Python/sklearn overhead (calls per leg and, for the forest, per tree). The computation itself fits the budget for the
+  forest (0.05 ms) and is tight for boosting in sklearn (0.58 ms). Deployment would need the trees compiled to C
+  (tree-to-code exporters exist) — not done. The papers report parameter counts (CNN 10.9M, ECNN 5.6M, MI-HGNN 1.6M,
+  MS-HGNN 2.1M), not latency.
 
 ### Appendix candidates
 LASSO on the raw window (which lags matter); MLP; stride 1 vs 150 rerun; random-split comparison

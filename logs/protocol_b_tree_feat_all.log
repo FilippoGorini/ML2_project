@@ -1,0 +1,17 @@
+  {'estimator__min_samples_leaf': 1}  val F1 0.9135
+  {'estimator__min_samples_leaf': 5}  val F1 0.9196
+  {'estimator__min_samples_leaf': 20}  val F1 0.9266
+  {'estimator__min_samples_leaf': 50}  val F1 0.9284
+  {'estimator__min_samples_leaf': 100}  val F1 0.9212
+  {'estimator__min_samples_leaf': 200}  val F1 0.9042
+best: {'estimator__min_samples_leaf': 50}  val F1 0.9284
+
+protocol_b/tree_feat_all — test, every timestep (n=375162)
+            F1    prec  recall     acc
+RF      0.8897  0.9003  0.8794  0.9226
+LF      0.8361  0.8257  0.8467  0.8826
+RH      0.8299  0.9114  0.7618  0.8898
+LH      0.8683  0.8580  0.8788  0.9060
+mean    0.8560  0.8739  0.8417  0.9003
+exact-state accuracy 0.7143
+every 10th timestep: F1 0.8560, exact-state 0.7143

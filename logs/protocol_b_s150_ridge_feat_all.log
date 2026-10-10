@@ -1,0 +1,22 @@
+/home/filippo/ML2_project/.venv/lib/python3.12/site-packages/sklearn/linear_model/_ridge.py:213: LinAlgWarning: Ill-conditioned matrix (rcond=2.18088e-08): result may not be accurate.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+  {'ridgeclassifier__alpha': np.float64(0.001)}  val F1 0.9366
+  {'ridgeclassifier__alpha': np.float64(0.01)}  val F1 0.9372
+  {'ridgeclassifier__alpha': np.float64(0.1)}  val F1 0.9384
+  {'ridgeclassifier__alpha': np.float64(1.0)}  val F1 0.9426
+  {'ridgeclassifier__alpha': np.float64(10.0)}  val F1 0.9421
+  {'ridgeclassifier__alpha': np.float64(100.0)}  val F1 0.9394
+  {'ridgeclassifier__alpha': np.float64(1000.0)}  val F1 0.9362
+  {'ridgeclassifier__alpha': np.float64(10000.0)}  val F1 0.9229
+  {'ridgeclassifier__alpha': np.float64(100000.0)}  val F1 0.8550
+best: {'ridgeclassifier__alpha': np.float64(1.0)}  val F1 0.9426
+
+protocol_b/stride150/ridge_feat_all — test, every timestep (n=375162)
+            F1    prec  recall     acc
+RF      0.9153  0.9490  0.8838  0.9419
+LF      0.9007  0.9406  0.8640  0.9326
+RH      0.9070  0.9662  0.8547  0.9382
+LH      0.9251  0.9591  0.8935  0.9490
+mean    0.9120  0.9537  0.8740  0.9404
+exact-state accuracy 0.8608
+every 10th timestep: F1 0.9122, exact-state 0.8612

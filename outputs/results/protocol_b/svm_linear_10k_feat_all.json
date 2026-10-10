@@ -1,0 +1,112 @@
+{
+  "test": {
+    "f1": 0.9091032312380477,
+    "precision": 0.9474864605624439,
+    "recall": 0.8738377672854626,
+    "accuracy": 0.9381067378892319,
+    "exact": 0.8513255606911148,
+    "per_leg": {
+      "RF": {
+        "f1": 0.8824589229892669,
+        "precision": 0.9055512538912505,
+        "recall": 0.8605150536827089,
+        "accuracy": 0.9186164910092174
+      },
+      "LF": {
+        "f1": 0.9084953132708437,
+        "precision": 0.9535151525193445,
+        "recall": 0.8675349931031364,
+        "accuracy": 0.938200030919976
+      },
+      "RH": {
+        "f1": 0.9199250557338688,
+        "precision": 0.9652681000729976,
+        "recall": 0.8786508200187261,
+        "accuracy": 0.9460019938053428
+      },
+      "LH": {
+        "f1": 0.9255336329582113,
+        "precision": 0.9656113357661834,
+        "recall": 0.8886502023372792,
+        "accuracy": 0.9496084358223914
+      }
+    }
+  },
+  "test_stride10": {
+    "f1": 0.9093047192538185,
+    "precision": 0.9482818250596099,
+    "recall": 0.8735556597693555,
+    "accuracy": 0.9382813124716795,
+    "exact": 0.851294080017059,
+    "per_leg": {
+      "RF": {
+        "f1": 0.8845428296438883,
+        "precision": 0.907496642704795,
+        "recall": 0.8627215379993992,
+        "accuracy": 0.9200629048164832
+      },
+      "LF": {
+        "f1": 0.9075238208199897,
+        "precision": 0.9537144756523185,
+        "recall": 0.8656007240365035,
+        "accuracy": 0.9376549297651732
+      },
+      "RH": {
+        "f1": 0.9191153238546603,
+        "precision": 0.9663649198571547,
+        "recall": 0.8762708035243618,
+        "accuracy": 0.9454114134925501
+      },
+      "LH": {
+        "f1": 0.9260369026967356,
+        "precision": 0.9655512620241716,
+        "recall": 0.8896295735171578,
+        "accuracy": 0.9499960018125116
+      }
+    }
+  },
+  "validation": [
+    {
+      "params": {
+        "estimator__multioutputclassifier__estimator__C": 0.001
+      },
+      "val_f1": 0.9357084843032495
+    },
+    {
+      "params": {
+        "estimator__multioutputclassifier__estimator__C": 0.003
+      },
+      "val_f1": 0.9388875808114097
+    },
+    {
+      "params": {
+        "estimator__multioutputclassifier__estimator__C": 0.01
+      },
+      "val_f1": 0.9425512516771286
+    },
+    {
+      "params": {
+        "estimator__multioutputclassifier__estimator__C": 0.03
+      },
+      "val_f1": 0.9432140641155037
+    },
+    {
+      "params": {
+        "estimator__multioutputclassifier__estimator__C": 0.1
+      },
+      "val_f1": 0.9428762554650205
+    },
+    {
+      "params": {
+        "estimator__multioutputclassifier__estimator__C": 0.3
+      },
+      "val_f1": 0.9415535068689717
+    },
+    {
+      "params": {
+        "estimator__multioutputclassifier__estimator__C": 1.0
+      },
+      "val_f1": 0.9393333445576904
+    }
+  ]
+}

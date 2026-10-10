@@ -1,0 +1,39 @@
+  {'estimator__rbfsvmclassifier__C': 0.1, 'estimator__rbfsvmclassifier__gamma_scale': 0.1}  val F1 0.8879
+  {'estimator__rbfsvmclassifier__C': 0.1, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.8998
+  {'estimator__rbfsvmclassifier__C': 0.1, 'estimator__rbfsvmclassifier__gamma_scale': 1.0}  val F1 0.8922
+  {'estimator__rbfsvmclassifier__C': 0.1, 'estimator__rbfsvmclassifier__gamma_scale': 3.0}  val F1 0.7353
+  {'estimator__rbfsvmclassifier__C': 0.3, 'estimator__rbfsvmclassifier__gamma_scale': 0.1}  val F1 0.9164
+  {'estimator__rbfsvmclassifier__C': 0.3, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.9239
+  {'estimator__rbfsvmclassifier__C': 0.3, 'estimator__rbfsvmclassifier__gamma_scale': 1.0}  val F1 0.9166
+  {'estimator__rbfsvmclassifier__C': 0.3, 'estimator__rbfsvmclassifier__gamma_scale': 3.0}  val F1 0.8142
+  {'estimator__rbfsvmclassifier__C': 1.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.1}  val F1 0.9300
+  {'estimator__rbfsvmclassifier__C': 1.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.9330
+  {'estimator__rbfsvmclassifier__C': 1.0, 'estimator__rbfsvmclassifier__gamma_scale': 1.0}  val F1 0.9339
+  {'estimator__rbfsvmclassifier__C': 1.0, 'estimator__rbfsvmclassifier__gamma_scale': 3.0}  val F1 0.8795
+  {'estimator__rbfsvmclassifier__C': 3.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.1}  val F1 0.9360
+  {'estimator__rbfsvmclassifier__C': 3.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.9429
+  {'estimator__rbfsvmclassifier__C': 3.0, 'estimator__rbfsvmclassifier__gamma_scale': 1.0}  val F1 0.9396
+  {'estimator__rbfsvmclassifier__C': 3.0, 'estimator__rbfsvmclassifier__gamma_scale': 3.0}  val F1 0.8916
+  {'estimator__rbfsvmclassifier__C': 10.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.1}  val F1 0.9412
+  {'estimator__rbfsvmclassifier__C': 10.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.9444
+  {'estimator__rbfsvmclassifier__C': 10.0, 'estimator__rbfsvmclassifier__gamma_scale': 1.0}  val F1 0.9416
+  {'estimator__rbfsvmclassifier__C': 10.0, 'estimator__rbfsvmclassifier__gamma_scale': 3.0}  val F1 0.8916
+  {'estimator__rbfsvmclassifier__C': 30.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.1}  val F1 0.9378
+  {'estimator__rbfsvmclassifier__C': 30.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.9448
+  {'estimator__rbfsvmclassifier__C': 30.0, 'estimator__rbfsvmclassifier__gamma_scale': 1.0}  val F1 0.9396
+  {'estimator__rbfsvmclassifier__C': 30.0, 'estimator__rbfsvmclassifier__gamma_scale': 3.0}  val F1 0.8916
+  {'estimator__rbfsvmclassifier__C': 100.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.1}  val F1 0.9361
+  {'estimator__rbfsvmclassifier__C': 100.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.9493
+  {'estimator__rbfsvmclassifier__C': 100.0, 'estimator__rbfsvmclassifier__gamma_scale': 1.0}  val F1 0.9396
+  {'estimator__rbfsvmclassifier__C': 100.0, 'estimator__rbfsvmclassifier__gamma_scale': 3.0}  val F1 0.8916
+best: {'estimator__rbfsvmclassifier__C': 100.0, 'estimator__rbfsvmclassifier__gamma_scale': 0.3}  val F1 0.9493
+
+protocol_b/stride150/svm_rbf_feat_all — test, every timestep (n=375162)
+            F1    prec  recall     acc
+RF      0.8517  0.9037  0.8054  0.9004
+LF      0.8111  0.8436  0.7811  0.8714
+RH      0.8557  0.9582  0.7730  0.9080
+LH      0.8825  0.9246  0.8440  0.9208
+mean    0.8503  0.9075  0.8009  0.9001
+exact-state accuracy 0.7728
+every 10th timestep: F1 0.8495, exact-state 0.7732

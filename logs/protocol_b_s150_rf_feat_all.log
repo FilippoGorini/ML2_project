@@ -1,0 +1,20 @@
+  {'estimator__max_features': 'sqrt', 'estimator__min_samples_leaf': 1}  val F1 0.9431
+  {'estimator__max_features': 'sqrt', 'estimator__min_samples_leaf': 5}  val F1 0.9377
+  {'estimator__max_features': 'sqrt', 'estimator__min_samples_leaf': 20}  val F1 0.9223
+  {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 1}  val F1 0.9487
+  {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 5}  val F1 0.9422
+  {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 20}  val F1 0.9294
+  {'estimator__max_features': 0.2, 'estimator__min_samples_leaf': 1}  val F1 0.9464
+  {'estimator__max_features': 0.2, 'estimator__min_samples_leaf': 5}  val F1 0.9446
+  {'estimator__max_features': 0.2, 'estimator__min_samples_leaf': 20}  val F1 0.9323
+best: {'estimator__max_features': 0.1, 'estimator__min_samples_leaf': 1}  val F1 0.9487
+
+protocol_b/stride150/rf_feat_all — test, every timestep (n=375162)
+            F1    prec  recall     acc
+RF      0.8897  0.9747  0.8183  0.9280
+LF      0.8902  0.9256  0.8573  0.9252
+RH      0.8996  0.9597  0.8466  0.9333
+LH      0.9038  0.9834  0.8362  0.9373
+mean    0.8958  0.9609  0.8396  0.9309
+exact-state accuracy 0.8470
+every 10th timestep: F1 0.8954, exact-state 0.8461
