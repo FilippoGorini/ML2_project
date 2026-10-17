@@ -1,0 +1,114 @@
+[
+  {
+    "params": {
+      "estimator__max_iter": 100,
+      "estimator__max_leaf_nodes": 15
+    },
+    "val_f1": 0.9681319283012149
+  },
+  {
+    "params": {
+      "estimator__max_iter": 100,
+      "estimator__max_leaf_nodes": 31
+    },
+    "val_f1": 0.971503628994569
+  },
+  {
+    "params": {
+      "estimator__max_iter": 100,
+      "estimator__max_leaf_nodes": 63
+    },
+    "val_f1": 0.9724345156515355
+  },
+  {
+    "params": {
+      "estimator__max_iter": 100,
+      "estimator__max_leaf_nodes": 127
+    },
+    "val_f1": 0.9731761597660171
+  },
+  {
+    "params": {
+      "estimator__max_iter": 200,
+      "estimator__max_leaf_nodes": 15
+    },
+    "val_f1": 0.9714894499262234
+  },
+  {
+    "params": {
+      "estimator__max_iter": 200,
+      "estimator__max_leaf_nodes": 31
+    },
+    "val_f1": 0.9729588979671357
+  },
+  {
+    "params": {
+      "estimator__max_iter": 200,
+      "estimator__max_leaf_nodes": 63
+    },
+    "val_f1": 0.9742106611757619
+  },
+  {
+    "params": {
+      "estimator__max_iter": 200,
+      "estimator__max_leaf_nodes": 127
+    },
+    "val_f1": 0.9745194892012691
+  },
+  {
+    "params": {
+      "estimator__max_iter": 400,
+      "estimator__max_leaf_nodes": 15
+    },
+    "val_f1": 0.9729877226047527
+  },
+  {
+    "params": {
+      "estimator__max_iter": 400,
+      "estimator__max_leaf_nodes": 31
+    },
+    "val_f1": 0.9743429394781511
+  },
+  {
+    "params": {
+      "estimator__max_iter": 400,
+      "estimator__max_leaf_nodes": 63
+    },
+    "val_f1": 0.9744561887011849
+  },
+  {
+    "params": {
+      "estimator__max_iter": 400,
+      "estimator__max_leaf_nodes": 127
+    },
+    "val_f1": 0.9749115794011545
+  },
+  {
+    "params": {
+      "estimator__max_iter": 800,
+      "estimator__max_leaf_nodes": 15
+    },
+    "val_f1": 0.9740288341168797
+  },
+  {
+    "params": {
+      "estimator__max_iter": 800,
+      "estimator__max_leaf_nodes": 31
+    },
+    "val_f1": 0.9749854163580868
+  },
+  {
+    "params": {
+      "estimator__max_iter": 800,
+      "estimator__max_leaf_nodes": 63
+    },
+    "val_f1": 0.9749993312820567
+  },
+  {
+    "params": {
+      "estimator__max_iter": 800,
+      "estimator__max_leaf_nodes": 127
+    },
+    "val_f1": 0.9751542848266884
+  }
+]

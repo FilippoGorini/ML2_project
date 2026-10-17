@@ -669,11 +669,53 @@ not automatically better: huge variance and wild extrapolation; RBF kernels are 
 5. ✅ Trees on the same input, 70k windows: decision tree → random forest → gradient boosting, with feature importance.
    Tree 0.940 → random forest 0.967 → gradient boosting **0.972 (best)**; `gb_10k` 0.962 > kernel ridge 0.956 at equal data.
 
+## Presentation plan (agreed 2026-10-16)
+
+Talk of ~10-12 min, 16-18 slides. Data and figures: `notebooks/05_presentation.ipynb` (presentation storyline only,
+exported figures in `figures/`; colours set once in its setup cell). Full results: `02_results`, `03_predictions`,
+`04_appendix`. Literature on splits / windows: `reports/Time series splits and windowing.md`.
+
+**Decisions:** protocol A (block split) is the main protocol, protocol B (unseen recordings) gets 2-3 slides; models
+shown: ridge, kernel ridge, decision tree (as building block), random forest, gradient boosting (+ `gb_10k` as one-line
+fairness check); SVMs only as backup; the stride experiments (150 / 1) are **not** shown - the protocol slide only gives
+the reasons for overlapping windows at stride 10; one slide on metric + imbalance + no class weighting; feature
+importance dropped.
+
+| # | slide | content | figure (`figures/`) |
+|---|---|---|---|
+| 1 | Title | | |
+| 2 | Problem | foot on the ground *now*, from the last 150 ms; feeds the contact-aided EKF; false contact = drift (harmful), missed = skipped measurement (mild) | |
+| 3 | Data | Mini-Cheetah: 15 recordings, 1 kHz, 54 channels, 3 gaits + 2 in the air; labels computed offline from foot height using future samples (an estimate) | `data_labels` |
+| 4 | Windows and split | `[train 70 \| gap \| val 15 \| gap \| test 15]` per recording; random splits optimistic on time series (sklearn docs, Arlot & Celisse 2010); one-window gaps; overlapping windows within sets (stride 10, near-duplicates); test on every timestep | `split_protocol_a` |
+| 5 | Metric, imbalance, no weighting | majority baseline acc 0.665 but F1 0; per-leg F1 + false-contact rate; 34/66 mild, recall >= precision (no majority bias), weighting would add false contacts | (table) |
+| 6 | Input ladder (ridge) | 0 -> 0.840 -> 0.930 -> 0.946 (current -> raw window -> features); features help a *linear* model (non-linear info) | `input_ladder` |
+| 7 | Why history (picture) | pronking: in stance the foot is neither still nor at a fixed height | `why_history_pronking` |
+| 8 | Ridge -> kernel ridge | same loss/penalty, RBF boundary: 0.946 -> 0.956; kernel trained on 10k windows (memory) | `model_ladder` |
+| 9 | Trees | depth-3 tree (first split on the opposite trot leg LF); one tree 0.940 = high variance | `depth3_tree` |
+| 10 | Forest vs boosting | averaging (variance) 0.967, sequential correction (bias) **0.972** | `model_ladder` |
+| 11 | Fair comparison | equal data (10k): boosting 0.962 vs kernel ridge 0.956 -> ~0.6 model, ~1.0 data | (table) |
+| 12 | Summary protocol A | F1 + false-contact rate per model (boosting 1.6% vs ridge 3.2%) | `model_ladder` |
+| 13 | Where the errors are | 72% of boosting's errors within 5 ms of a true touchdown/lift-off (timing, label is an estimate) | `error_timing`, `strips_trot` |
+| 14 | Protocol B setup | papers' split, 5 whole recordings held out; pronking = only pronking recording -> unseen gait | |
+| 15 | Protocol B results | boosting 0.938; drop is the unseen gait (without pronking 0.970 vs 0.972); errors are missed contacts | `protocol_b` |
+| 16 | Against published models | boosting 0.938 vs MS-HGNN 0.939 +- 0.006, MI-HGNN 0.931, CNN 0.861; no neural net, ~10x less data; caveats | `papers_comparison` |
+| 17 | Limits | labels are an estimate; not run on the robot (15 ms per call in Python, compute fits); one validation block; unseen gaits hard | |
+| 18 | Conclusion | history -> features -> ensembles: 0.84 -> 0.97; unseen terrain at state-of-the-art level | |
+
+**Backup slides:** SVM boundary x loss 2x2 ("why no SVM?"); stride 150 / stride 1 ("why overlapping windows?");
+window-lag and feature-group choices; raw window vs features for boosting (tie); hyperparameter surfaces (`val_*`);
+confusion matrices (`cm_*`, `cm16_*`); literature report; real-time timing table.
+Wording: "features help linear and kernel models; tree ensembles reach the same accuracy from the raw window".
+
 ### Weak spots to check (questions the professor could ask)
 - **Input chosen with ridge, then used for every model.** Not leakage (all choices on validation, test untouched; the
   val → test gap of ridge on features is only 0.5), but possibly not the best input for the other models — fixed on
   purpose so the model ladder changes one thing at a time; features chosen for a linear model, if anything, favour it.
-  Check (val only): gradient boosting on the raw window (`gb window_log --val-only`) vs `feat_all` (val 0.9750).
+  **Checked (val only, `gb window_log --val-only`): gradient boosting on the raw window 0.9752 vs `feat_all` 0.9750** —
+  a tie (all 16 settings within −0.13…+0.05 points). The ridge-chosen input does not handicap the best model. But for
+  boosting the features add no accuracy over the raw window (they do for ridge: +0.5 val, +1.7 test): trees build the
+  non-linear summaries themselves; for boosting the features are a compact (half the values), interpretable input.
+  Not checked: whether features generalize better to unseen recordings (protocol B) for boosting.
   Exploration was not fully test-blind (whole recordings for class balance, label artefact, autocorrelation), but the
   scatter that motivated the foot-speed features used training windows only.
 - **Random forest: is 200 trees enough?** `n_estimators` was fixed, not tuned (more trees only lower the variance, never

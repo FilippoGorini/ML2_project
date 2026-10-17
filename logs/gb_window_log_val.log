@@ -1,0 +1,17 @@
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 15}  val F1 0.9681
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 31}  val F1 0.9715
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 63}  val F1 0.9724
+  {'estimator__max_iter': 100, 'estimator__max_leaf_nodes': 127}  val F1 0.9732
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 15}  val F1 0.9715
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 31}  val F1 0.9730
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 63}  val F1 0.9742
+  {'estimator__max_iter': 200, 'estimator__max_leaf_nodes': 127}  val F1 0.9745
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 15}  val F1 0.9730
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 31}  val F1 0.9743
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 63}  val F1 0.9745
+  {'estimator__max_iter': 400, 'estimator__max_leaf_nodes': 127}  val F1 0.9749
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 15}  val F1 0.9740
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 31}  val F1 0.9750
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 63}  val F1 0.9750
+  {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 127}  val F1 0.9752
+best: {'estimator__max_iter': 800, 'estimator__max_leaf_nodes': 127}  val F1 0.9752
