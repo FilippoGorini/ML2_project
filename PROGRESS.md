@@ -289,18 +289,18 @@ and scored on validation; test inputs never built. Test is used once, for the ch
   0.916 → 0.949; trot terrains already ~0.95–0.97 change by ±0.01.
 - **Val → test gap only 0.5 points** (0.951 → 0.946; was 4.7 for current, 1.6 for the window): window
   statistics are less sensitive to the gait drift within a recording.
-- α flat again → still a **linear model limited by its boundary**; the input ladder is done:
+- α flat again → still a **linear model limited by its boundary**; the input comparison is done:
   **0 → 0.840 → 0.930 → 0.946** (baseline → instant → raw history → features).
 - Galloping (0.83) and LF (0.935) remain the weak spots.
 - Weights per value: largest on the current value and on **foot height above its window minimum** (the
   feature mirroring how labels were made); small on 5 ms change and foot speed. Correlated features share
   weight, so the validation ablation, not the weights, is the measure of importance.
 
-→ **`feat_all` is the input for the model ladder** (kernel ridge, SVM, trees).
+→ **`feat_all` is the input for the model comparison** (kernel ridge, SVM, trees).
 
 ---
 
-## Phase 4 — Model ladder (input fixed: `feat_all`)
+## Phase 4 — Model comparison (input fixed: `feat_all`)
 
 ### Kernel methods are trained on 10k windows
 Kernel methods work on pairs of training samples: kernel ridge stores an n × n kernel matrix and solves it
@@ -363,7 +363,7 @@ needed 139k–264k iterations, all converged; total ~5 h, the RBF SVM ~15 min).
 | RBF kernel | **kernel ridge 0.956** | RBF SVM 0.953 | −0.003 |
 | effect of the boundary | +0.014 | +0.011 | |
 
-**All model-ladder models:**
+**All model-comparison models:**
 
 | model (feat_all) | train windows | val F1 | test F1 | precision | recall | exact-state | false contact | missed contact |
 |---|---|---|---|---|---|---|---|---|
@@ -439,7 +439,7 @@ training windows**, no subsample. One change per step:
 
 - **Gradient boosting is the best model by a wide margin**: +1.6 over kernel ridge, +2.0 over the 70k linear SVM;
   val agrees (0.975 vs 0.963); val → test gap 0.3, the smallest of all models.
-- **Tree ladder, one change per step: 0.940 → 0.967 → 0.972.** tree → forest **+2.7** (averaging removes most of a single
+- **Tree sequence, one change per step: 0.940 → 0.967 → 0.972.** tree → forest **+2.7** (averaging removes most of a single
   tree's variance — the largest step; the forest alone beats every non-tree model, +1.1 over kernel ridge);
   forest → boosting **+0.5** (lower bias), on both errors: false contacts 1.8% → 1.6%, missed 3.2% → 2.4%.
 - Per recording: forest > kernel ridge on every ground recording, boosting > forest on every one (pronking by 0.001);
@@ -609,15 +609,15 @@ the raw 150 × 54 window, ~635k train+val windows at stride 1, trained on train 
 | **C. hand-crafted features** from the window | a few hundred (per-channel stats, last values, deltas, `|v|`, `v²`, …) | does domain knowledge beat raw history? |
 
 ### Two axes, one change at a time
-1. **Input ladder**, model fixed (ridge): A → B → C.
-2. **Model ladder**, input fixed (best of A/B/C): ridge → kernel ridge (boundary) → SVM (loss) → trees (tree → forest → boosting).
+1. **Input comparison**, model fixed (ridge): A → B → C.
+2. **Model comparison**, input fixed (best of A/B/C): ridge → kernel ridge (boundary) → SVM (loss) → trees (tree → forest → boosting).
 
 ### Course models: tier list for this project
 ✓✓ very useful · ✓ useful · ~ possible but limited · ✗ not sensible. Sections refer to `Lessons/ML2_Topics_Index.md`.
 
 | Tier | Model (§) | A | B | C | Why |
 |---|---|---|---|---|---|
-| **S** | Ridge / RLS (§3) | ✓✓ | ✓✓ | ✓✓ | closed form, seconds; fixed model of the input ladder; the linear floor |
+| **S** | Ridge / RLS (§3) | ✓✓ | ✓✓ | ✓✓ | closed form, seconds; fixed model of the input comparison; the linear floor |
 | **A** | Kernel ridge, RBF (§4) | ✓✓ | ~ | ✓✓ | main non-linear course model, should fix "`v_z` near zero"; n³ cost → train on 10–20k subsample; distances on 810 raw values less meaningful |
 | **A** | Gradient boosting (§8) | ✓✓ | ✓ | ✓✓ | strongest on tabular data (0.949 on A alone in the stride experiment); fast, no scaling |
 | **B+** | Random forest / bagging (§8) | ✓ | ~ | ✓✓ | non-linear, little tuning; feature importance is a good slide |
@@ -625,7 +625,7 @@ the raw 150 × 54 window, ~635k train+val windows at stride 1, trained on train 
 | **B** | Linear SVM (§7) | ✓ | ✓ | ✓ | isolates the loss (ridge vs hinge, same boundary); one controlled comparison |
 | **B** | LASSO / L1-SVM (§3, §7) | ~ | ✓✓ | ✓ | on raw windows the zero weights show which lags/channels matter; interpretation more than score |
 | **B−** | MLP (§10) | ✓ | ✓ | ✓✓ | "φ fixed (kernel) vs φ learned"; optional (DL not mandatory); 0.930 on features in the old runs |
-| **C** | Decision tree (§8) | ✓ | ✗ | ✓ | high variance; first rung of the tree ladder (tree → forest = cost of variance) and a picture (depth-3 tree = learned thresholds) |
+| **C** | Decision tree (§8) | ✓ | ✗ | ✓ | high variance; first rung of the tree sequence (tree → forest = cost of variance) and a picture (depth-3 tree = learned thresholds) |
 | **C** | Bayesian linear regression (§9) | ✓ | ✓ | ✓ | same predictions as ridge (MAP); its predictive variance is interesting for the EKF — a remark, not a model |
 | **D** | 1D CNN / Transformer (§12–13) | ✗ | ✓ | ✗ | raw windows only; appendix curiosity; lost to features + MLP in the old runs |
 | **D** | Perceptron (§10) | ~ | ~ | ~ | historical; ridge does linear classification better |
@@ -663,54 +663,60 @@ not automatically better: huge variance and wild extrapolation; RBF kernels are 
 
 ### Core path
 1. ✅ Majority baseline.
-2. ✅ Ridge on A → B → C (input ladder): 0.840 → 0.930 → 0.946.
+2. ✅ Ridge on A → B → C (input comparison): 0.840 → 0.930 → 0.946.
 3. ✅ Kernel ridge on the best input (non-linear boundary): 0.956.
 4. ✅ Linear SVM and RBF SVM on the same input (loss) → 2×2 with ridge / kernel ridge: boundary matters, loss only with full data.
 5. ✅ Trees on the same input, 70k windows: decision tree → random forest → gradient boosting, with feature importance.
    Tree 0.940 → random forest 0.967 → gradient boosting **0.972 (best)**; `gb_10k` 0.962 > kernel ridge 0.956 at equal data.
 
-## Presentation plan (agreed 2026-10-16)
+## Presentation plan (revised 2026-10-18; first version 2026-10-16)
 
-Talk of ~10-12 min, 16-18 slides. Data and figures: `notebooks/05_presentation.ipynb` (presentation storyline only,
+Talk of ~10-12 min, 19 slides. Data and figures: `notebooks/05_presentation.ipynb` (presentation storyline only,
 exported figures in `figures/`; colours set once in its setup cell). Full results: `02_results`, `03_predictions`,
 `04_appendix`. Literature on splits / windows: `reports/Time series splits and windowing.md`.
+**Slide text draft** (titles, formulas, one-liners, captions, speaker notes): `reports/slides_draft.md`.
 
-**Decisions:** protocol A (block split) is the main protocol, protocol B (unseen recordings) gets 2-3 slides; models
-shown: ridge, kernel ridge, decision tree (as building block), random forest, gradient boosting (+ `gb_10k` as one-line
-fairness check); SVMs only as backup; the stride experiments (150 / 1) are **not** shown - the protocol slide only gives
-the reasons for overlapping windows at stride 10; one slide on metric + imbalance + no class weighting; feature
-importance dropped.
+**Decisions:** protocol A (block split) is the main protocol, protocol B (unseen recordings) gets 2 slides; method in
+4 slides (sample, split, tuning + normalization, metric); then **one slide per model**, same layout every time: what
+the model is (formula + 1-2 lines, as in the EMG reference deck), its tuning plot (`val_*`, α curve or 2-D grid), its
+per-leg confusion matrices (`cm_*`, 2 × 2) and test F1. The input comparison sits inside the ridge part (features were
+best → kept as the input for every model). SVMs only as backup; the stride experiments (150 / 1) are not shown;
+feature importance dropped. No "ladder" wording: input comparison / model comparison.
 
 | # | slide | content | figure (`figures/`) |
 |---|---|---|---|
 | 1 | Title | | |
-| 2 | Problem | foot on the ground *now*, from the last 150 ms; feeds the contact-aided EKF; false contact = drift (harmful), missed = skipped measurement (mild) | |
-| 3 | Data | Mini-Cheetah: 15 recordings, 1 kHz, 54 channels, 3 gaits + 2 in the air; labels computed offline from foot height using future samples (an estimate) | `data_labels` |
-| 4 | Windows and split | `[train 70 \| gap \| val 15 \| gap \| test 15]` per recording; random splits optimistic on time series (sklearn docs, Arlot & Celisse 2010); one-window gaps; overlapping windows within sets (stride 10, near-duplicates); test on every timestep | `split_protocol_a` |
-| 5 | Metric, imbalance, no weighting | majority baseline acc 0.665 but F1 0; per-leg F1 + false-contact rate; 34/66 mild, recall >= precision (no majority bias), weighting would add false contacts | (table) |
-| 6 | Input ladder (ridge) | 0 -> 0.840 -> 0.930 -> 0.946 (current -> raw window -> features); features help a *linear* model (non-linear info) | `input_ladder` |
-| 7 | Why history (picture) | pronking: in stance the foot is neither still nor at a fixed height | `why_history_pronking` |
-| 8 | Ridge -> kernel ridge | same loss/penalty, RBF boundary: 0.946 -> 0.956; kernel trained on 10k windows (memory) | `model_ladder` |
-| 9 | Trees | depth-3 tree (first split on the opposite trot leg LF); one tree 0.940 = high variance | `depth3_tree` |
-| 10 | Forest vs boosting | averaging (variance) 0.967, sequential correction (bias) **0.972** | `model_ladder` |
-| 11 | Fair comparison | equal data (10k): boosting 0.962 vs kernel ridge 0.956 -> ~0.6 model, ~1.0 data | (table) |
-| 12 | Summary protocol A | F1 + false-contact rate per model (boosting 1.6% vs ridge 3.2%) | `model_ladder` |
-| 13 | Where the errors are | 72% of boosting's errors within 5 ms of a true touchdown/lift-off (timing, label is an estimate) | `error_timing`, `strips_trot` |
-| 14 | Protocol B setup | papers' split, 5 whole recordings held out; pronking = only pronking recording -> unseen gait | |
-| 15 | Protocol B results | boosting 0.938; drop is the unseen gait (without pronking 0.970 vs 0.972); errors are missed contacts | `protocol_b` |
-| 16 | Against published models | boosting 0.938 vs MS-HGNN 0.939 +- 0.006, MI-HGNN 0.931, CNN 0.861; no neural net, ~10x less data; caveats | `papers_comparison` |
-| 17 | Limits | labels are an estimate; not run on the robot (15 ms per call in Python, compute fits); one validation block; unseen gaits hard | |
-| 18 | Conclusion | history -> features -> ensembles: 0.84 -> 0.97; unseen terrain at state-of-the-art level | |
+| 2 | Problem | contact estimation to aid the contact-aided EKF: is each foot on the ground *now*, from the last 150 ms; false contact = drift (harmful), missed = skipped update (mild) | |
+| 3 | Dataset | Mini-Cheetah (Lin et al. 2021): 15 recordings, 8 terrains, 3 gaits + 2 in the air, 1 kHz, 1,008,941 timesteps (~17 min) after trimming, 54 channels (q, qd, IMU acc / ω, foot p, v); labels from foot height (an estimate) | terrains photo = Fig. 3(b) of Lin et al. (arXiv 2106.15713, cited), `data_labels` |
+| 4 | Sample and task | 150 ms window (the papers' unit), label = contact at its last timestep; 4 independent binary classifiers, one per leg | window sketch |
+| 5 | Split | applied **to each recording separately**: train 70 / val 15 / test 15 contiguous blocks, one-window (150 ms) gaps; random windows would leak near-copies into test; windows per set: train 704,688 → 70,476 (stride 10), val 148,755 → 14,882, test 148,763 (every timestep) | `split_one_recording` |
+| 6 | Tuning and normalization | `GridSearchCV` + `PredefinedSplit` (one fixed train → val fold, no k-fold); refit on train+val (85,358 windows); test once; `StandardScaler` inside the pipeline: fitted on train during the search, re-fitted on train+val at the refit, only applied to val / test; trees unscaled | code snippet / flow |
+| 7 | Metric and imbalance | majority baseline acc 0.665, F1 0 → per-leg F1 + false-contact rate; 34/66 mild, recall ≥ precision; no class weighting (would add false contacts) | table |
+| 8 | Ridge: which input | ridge formula; input comparison 0 → 0.840 → 0.930 → 0.946 (current → raw window → features); history fixes pronking / galloping; features = non-linear summaries a linear model cannot build; chosen on validation → kept for all models | `input_comparison`, `why_history_pronking` |
+| 9 | Ridge on features | α curve flat up to ~10³ (under-fitting, the limit is the boundary), α = 0.1; 0.946, false contacts 3.2% | `val_ridge_feat_all`, `cm_ridge_feat_all` |
+| 10 | Kernel ridge | same loss, RBF kernel → curved boundary; one weight per training window, n × n matrix → 10k windows; α, γ interact (diagonal band); 0.956, 2.5% | `val_krr_feat_all`, `cm_krr_feat_all` |
+| 11 | Decision tree | yes/no splits "feature ≤ t" chosen to make the children purer (Gini); depth-3 example (first split on LF); leaf size = bias-variance knob (50); 0.940 | `depth3_tree`, `val_tree_feat_all` |
+| 12 | Random forest | 200 deep trees per leg on bootstrap samples + random feature subsets, averaged → lower variance; leaf size 1 best (opposite of one tree); 0.967, 1.8% | `val_rf_feat_all`, `cm_rf_feat_all` |
+| 13 | Gradient boosting | small trees added one at a time, each fitted to the current errors (log-loss gradient), learning rate 0.1 → lower bias; whole grid 0.969-0.975, 800 × 63 leaves; **0.972**, 1.6%; equal data (10k): 0.962 vs kernel ridge 0.956 | `val_gb_feat_all`, `cm_gb_feat_all` |
+| 14 | Model comparison | F1 + false-contact rate per model | `model_comparison` |
+| 15 | Where the errors are | 72% of boosting's errors within 5 ms of a true touchdown / lift-off | `error_timing`, `strips_trot` |
+| 16 | Protocol B | papers' split, 5 whole recordings held out, pronking = unseen gait; boosting 0.938, drop = pronking (0.970 without); errors are missed contacts | `protocol_b` |
+| 17 | Against published models | 0.938 vs MS-HGNN 0.939 ± 0.006, MI-HGNN 0.931, CNN 0.861; no neural net, ~10× less data; caveats | `papers_comparison` |
+| 18 | Limits | labels are an estimate; not run on the robot (15 ms per call in Python, compute fits); one validation block; unseen gaits hard | |
+| 19 | Conclusion | current timestep → history → features → tree ensembles: 0.84 → 0.97; unseen terrain at state-of-the-art level | |
+
+If too long: merge 14 + 15.
 
 **Backup slides:** SVM boundary x loss 2x2 ("why no SVM?"); stride 150 / stride 1 ("why overlapping windows?");
-window-lag and feature-group choices; raw window vs features for boosting (tie); hyperparameter surfaces (`val_*`);
-confusion matrices (`cm_*`, `cm16_*`); literature report; real-time timing table.
+all-recordings split (`split_protocol_a`); window-lag and feature-group choices; raw window vs features for boosting
+(tie); 16-state confusion matrices (`cm16_*`); ridge on current / raw window cards (`val_ridge_current`,
+`val_ridge_window_log`, `cm_*`); literature report; real-time timing table.
 Wording: "features help linear and kernel models; tree ensembles reach the same accuracy from the raw window".
 
 ### Weak spots to check (questions the professor could ask)
 - **Input chosen with ridge, then used for every model.** Not leakage (all choices on validation, test untouched; the
   val → test gap of ridge on features is only 0.5), but possibly not the best input for the other models — fixed on
-  purpose so the model ladder changes one thing at a time; features chosen for a linear model, if anything, favour it.
+  purpose so the model comparison changes one thing at a time; features chosen for a linear model, if anything, favour it.
   **Checked (val only, `gb window_log --val-only`): gradient boosting on the raw window 0.9752 vs `feat_all` 0.9750** —
   a tie (all 16 settings within −0.13…+0.05 points). The ridge-chosen input does not handicap the best model. But for
   boosting the features add no accuracy over the raw window (they do for ridge: +0.5 val, +1.7 test): trees build the
