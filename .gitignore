@@ -20,5 +20,7 @@ env/
 
 Lessons/
 
+presentation/
+
 # Test predictions (regenerate via src.train)
 outputs/results/*.npy
